@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>The Archive | Personal Dossier</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg: #000000;
+            --panel: #111111;
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #ffffff;
+            --text-main: #efefef;
+            --text-dim: #777;
+            --danger: #ff453a; /* iOS Red */
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(40, 40, 40, 0.5) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(20, 20, 20, 0.5) 0px, transparent 50%);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            /* Handles iOS padding for notch */
+            padding: calc(var(--safe-top) + 20px) 20px calc(var(--safe-bottom) + 20px) 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin: 0;
+        }
+
+        .status-pill {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: var(--glass);
+            padding: 6px 12px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        /* Responsive Grid Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 850px) {
+            .main-layout {
+                grid-template-columns: 350px 1fr;
+                align-items: start;
+            }
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Inputs & Controls */
+        input, textarea, select {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            color: white;
+            font-family: inherit;
+            font-size: 16px; /* Prevents iOS auto-zoom */
+            margin-bottom: 12px;
+            transition: border 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #555;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+        }
+
+        .btn-primary { background: var(--accent); color: black; width: 100%; }
+        .btn-secondary { background: var(--glass); color: white; width: auto; }
+
+        .btn:hover { transform: scale(0.98); opacity: 0.9; }
+        .btn:active { transform: scale(0.95); }
+
+        /* Incident Feed */
+        .feed {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .entry {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 16px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .entry:hover {
+            border-color: #444;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .entry-name {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .entry-text {
+            color: #aaa;
+            font-size: 1rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .entry-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .expunge-btn {
+            color: var(--danger);
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .error-overlay {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--danger);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+<div id="errorOverlay" class="error-overlay">Permissions Denied</div>
+
+<div class="app-container">
+    <header>
+        <div>
+            <h1>the archive.</h1>
+            <div style="color: var(--text-dim); font-size: 0.9rem;">Cloud Dossier v2.0</div>
+        </div>
+        <div class="status-pill">Encrypted Sync</div>
+    </header>
+
+    <div class="main-layout">
+        <div class="sidebar">
+            <div class="card">
+                <span class="section-title">New Profile</span>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="newFriendName" placeholder="Name" style="margin-bottom: 0;">
+                    <button class="btn btn-secondary" id="addProfileBtn">+</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <span class="section-title">Log Incident</span>
+                <select id="friendSelect">
+                    <option value="" disabled selected>Select Profile</option>
+                </select>
+                <textarea id="incidentInput" rows="4" placeholder="What happened?"></textarea>
+                <button class="btn btn-primary" id="saveEntryBtn">Commit to Cloud</button>
+            </div>
+        </div>
+
+        <div class="feed-section">
+            <span class="section-title">Central Feed</span>
+            <div id="logList" class="feed">
+                </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDn3fqrdVcRnvkiX7t6TPJWrngXSrM_1p4",
+        authDomain: "my-a-ab8f3.firebaseapp.com",
+        projectId: "my-a-ab8f3",
+        storageBucket: "my-a-ab8f3.firebasestorage.app",
+        messagingSenderId: "65984042323",
+        appId: "1:65984042323:web:f4a5463bd4cc220d2c3da6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const profilesCol = collection(db, "profiles");
+    const entriesCol = collection(db, "entries");
+
+    const handleError = (err) => {
+        const overlay = document.getElementById('errorOverlay');
+        overlay.style.display = 'block';
+        overlay.textContent = "Database Error: Check Permissions";
+        console.error(err);
+    };
+
+    // Add Profile
+    document.getElementById('addProfileBtn').onclick = async () => {
+        const input = document.getElementById('newFriendName');
+        if (input.value.trim()) {
+            try {
+                await addDoc(profilesCol, { name: input.value.trim() });
+                input.value = '';
+            } catch (e) { handleError(e); }
+        }
+    };
+
+    // Sync Dropdown
+    onSnapshot(profilesCol, (snap) => {
+        const select = document.getElementById('friendSelect');
+        select.innerHTML = '<option value="" disabled selected>Select Profile</option>';
+        snap.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.data().name;
+            opt.textContent = d.data().name;
+            select.appendChild(opt);
+        });
+    }, handleError);
+
+    // File Incident
+    document.getElementById('saveEntryBtn').onclick = async () => {
+        const name = document.getElementById('friendSelect').value;
+        const text = document.getElementById('incidentInput').value.trim();
+        if (!name || !text) return;
+
+        try {
+            await addDoc(entriesCol, {
+                name: name,
+                incident: text,
+                timestamp: Date.now(),
+                dateStr: new Date().toLocaleDateString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})
+            });
+            document.getElementById('incidentInput').value = '';
+        } catch (e) { handleError(e); }
+    };
+
+    // Sync Feed
+    const q = query(entriesCol, orderBy("timestamp", "desc"));
+    onSnapshot(q, (snap) => {
+        const list = document.getElementById('logList');
+        list.innerHTML = '';
+        snap.forEach(record => {
+            const data = record.data();
+            const div = document.createElement('div');
+            div.className = 'entry';
+            div.innerHTML = `
+                <div class="entry-header">
+                    <span class="entry-name">${data.name}</span>
+                </div>
+                <div class="entry-text">${data.incident}</div>
+                <div class="entry-footer">
+                    <span>${data.dateStr}</span>
+                    <span class="expunge-btn" onclick="deleteRecord('${record.id}')">Expunge</span>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }, handleError);
+
+    window.deleteRecord = async (id) => {
+        try { await deleteDoc(doc(db, "entries", id)); } catch(e) { handleError(e); }
+    };
+</script>
+
+</body>
+</html>
