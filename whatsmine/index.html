@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>whats mine. | v1.2.6</title>
+    <title>whats mine. | v1.2.7</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
         :root {
             --bg: #000000;
@@ -32,7 +32,6 @@
             padding: 40px 20px;
         }
 
-        /* TIGHTER DESKTOP CONSTRAINT */
         .app-container { 
             width: 100%; 
             max-width: 950px; 
@@ -59,7 +58,6 @@
 
         .version-tag { font-family: monospace; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px; }
 
-        /* TWO-COLUMN GRID SETUP */
         .main-layout { 
             display: grid; 
             grid-template-columns: 1fr; 
@@ -108,14 +106,22 @@
         .btn-primary { background: var(--accent); color: black; width: 100%; }
         .btn-secondary { background: var(--glass); color: white; width: 100%; margin-top: 8px; }
 
-        /* ITEM ENTRIES */
         .entry { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 20px; }
         .item-img { width: 100%; border-radius: 10px; margin: 12px 0; border: 1px solid var(--border); }
 
-        .qr-wrapper { margin-top: 15px; display: flex; align-items: flex-start; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; }
-        .qr-output { background: white; padding: 8px; border-radius: 8px; cursor: pointer; }
-        .label-preview-text { font-size: 0.65rem; color: var(--text-dim); line-height: 1.4; }
-        .label-preview-text b { color: var(--text-main); display: block; margin-bottom: 4px; }
+        .qr-wrapper { 
+            margin-top: 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            background: rgba(255,255,255,0.02); 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border);
+        }
+        .qr-output { background: white; padding: 6px; border-radius: 6px; cursor: pointer; }
+        .label-text { font-size: 0.7rem; color: var(--text-dim); line-height: 1.4; }
+        .label-text b { color: var(--text-main); display: block; margin-bottom: 2px; font-size: 0.75rem; }
 
         .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-dim); }
         .expunge-btn { color: var(--danger); cursor: pointer; }
@@ -150,7 +156,7 @@
     <header>
         <div class="brand-block">
             <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
-            <div class="version-tag">CORE_SYSTEM_v1.2.6</div>
+            <div class="version-tag">CORE_SYSTEM_v1.2.7</div>
         </div>
         <div id="status-badge" style="font-size: 0.6rem; color: #00ff88; font-weight: 700;">UPLINK_STABLE</div>
     </header>
@@ -168,15 +174,6 @@
                 <textarea id="itemDesc" rows="3" placeholder="Context/Notes..."></textarea>
                 <button class="btn btn-primary" id="saveItemBtn">Commit to Vault</button>
                 <button class="btn btn-secondary" onclick="startScanner()">Trigger Scanner</button>
-            </div>
-            
-            <div class="card" style="margin-top: 20px; opacity: 0.5; padding: 15px;">
-                <span class="section-title" style="margin-bottom: 5px;">Build Manifest</span>
-                <div style="font-size: 0.6rem; line-height: 1.8;">
-                    DESKTOP_OPTIMIZED: TRUE<br>
-                    OWNERSHIP_LABEL: v2.0<br>
-                    IMG_HOST: IMGBB
-                </div>
             </div>
         </aside>
 
@@ -209,7 +206,7 @@
     const inventoryCol = collection(db, "inventory");
     const BASE_URL = "https://lsp-code.github.io/lw/whatsmine/";
 
-    // Deep Link
+    // Deep Link Check
     window.addEventListener('DOMContentLoaded', async () => {
         const id = new URLSearchParams(window.location.search).get('id');
         if (id) {
@@ -228,7 +225,7 @@
         }
     });
 
-    // Image Upload Preview
+    // Preview
     const fileInput = document.getElementById('fileInput');
     fileInput.onchange = () => {
         const [file] = fileInput.files;
@@ -278,69 +275,67 @@
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <span style="font-weight:700; font-size: 1.2rem;">${d.name}</span>
-                    <span class="expunge-btn" style="font-size:0.6rem; text-transform:uppercase;" onclick="deleteItem('${id}')">Expunge</span>
+                    <span class="expunge-btn" onclick="deleteItem('${id}')">Expunge</span>
                 </div>
                 <p style="color:#666; font-size: 0.85rem; margin:8px 0;">${d.desc || ''}</p>
                 ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
                 <div class="qr-wrapper">
-                    <div class="qr-output" id="qr-${id}" onclick="generatePhysicalLabel('${id}', '${d.name}')"></div>
-                    <div class="label-preview-text">
+                    <div class="qr-output" id="qr-${id}" onclick="generateTag('${id}', '${d.name}')"></div>
+                    <div class="label-text">
                         <b>PROPERTY OF LOGAN WESTLAKE</b>
-                        Item: ${d.name}<br>
-                        <span style="font-size:0.5rem; opacity:0.5;">TAP CODE TO SAVE LABEL</span>
+                        <span>${d.name}</span><br>
+                        <span style="font-size:0.55rem; opacity:0.5; margin-top:4px; display:block;">TAP QR TO DOWNLOAD TAG</span>
                     </div>
                 </div>
             `;
             list.appendChild(div);
             new QRCode(document.getElementById(`qr-${id}`), { 
-                text: `${BASE_URL}?id=${id}`, 
-                width: 100, 
-                height: 100, 
-                colorDark: "#000", 
-                colorLight: "#fff", 
-                correctLevel: QRCode.CorrectLevel.H 
+                text: `${BASE_URL}?id=${id}`, width: 80, height: 80, 
+                colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.H 
             });
         });
     });
 
-    // CUSTOM LABEL GENERATION (Canvas based)
-    window.generatePhysicalLabel = (id, itemName) => {
+    // PHYSICAL TAG GENERATOR
+    window.generateTag = (id, itemName) => {
         const qrCanvas = document.querySelector(`#qr-${id} canvas`);
-        const labelCanvas = document.createElement('canvas');
-        const ctx = labelCanvas.getContext('2d');
+        const tagCanvas = document.createElement('canvas');
+        const ctx = tagCanvas.getContext('2d');
         
-        // Define dimensions for the physical sticker (Width 600px x Height 300px)
-        labelCanvas.width = 600;
-        labelCanvas.height = 250;
+        // Size for a clear physical label
+        tagCanvas.width = 800;
+        tagCanvas.height = 300;
         
-        // White Background
+        // Clean white background
         ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, labelCanvas.width, labelCanvas.height);
+        ctx.fillRect(0, 0, tagCanvas.width, tagCanvas.height);
         
-        // Draw the QR Code
-        ctx.drawImage(qrCanvas, 20, 25, 200, 200);
+        // Draw QR
+        ctx.drawImage(qrCanvas, 30, 30, 240, 240);
         
-        // Text Styling
+        // Header Text
         ctx.fillStyle = "black";
-        ctx.font = "bold 24px Inter, sans-serif";
-        ctx.fillText("PROPERTY OF LOGAN WESTLAKE", 240, 80);
+        ctx.font = "bold 32px Inter, sans-serif";
+        ctx.fillText("PROPERTY OF LOGAN WESTLAKE", 300, 90);
         
-        ctx.font = "20px Inter, sans-serif";
-        ctx.fillStyle = "#555";
-        ctx.fillText(`ITEM: ${itemName.toUpperCase()}`, 240, 120);
+        // Item Name (Larger)
+        ctx.font = "bold 48px Inter, sans-serif";
+        ctx.fillText(itemName.toUpperCase(), 300, 160);
         
-        ctx.font = "14px monospace";
-        ctx.fillText(`ID: ${id.substring(0,12)}`, 240, 160);
+        // Footer Detail
+        ctx.font = "24px Inter, sans-serif";
+        ctx.fillStyle = "#666";
+        ctx.fillText(`VAULT ID: ${id.substring(0,14)}`, 300, 220);
         
-        // Aesthetic border
+        // Thick Outer Border
         ctx.strokeStyle = "black";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(5, 5, labelCanvas.width - 10, labelCanvas.height - 10);
+        ctx.lineWidth = 10;
+        ctx.strokeRect(5, 5, tagCanvas.width - 10, tagCanvas.height - 10);
 
-        // Download
+        // Instant Download
         const link = document.createElement('a');
-        link.download = `LABEL-${itemName.toUpperCase()}.png`;
-        link.href = labelCanvas.toDataURL();
+        link.download = `TAG-${itemName.toUpperCase()}.png`;
+        link.href = tagCanvas.toDataURL("image/png");
         link.click();
     };
 
