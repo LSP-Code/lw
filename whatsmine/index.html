@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>whats mine. | Inventory Vault</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg: #000000;
+            --panel: #111111;
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #ffffff;
+            --text-main: #efefef;
+            --text-dim: #777;
+            --danger: #ff453a;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(at 0% 0%, rgba(40, 40, 40, 0.5) 0px, transparent 50%);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: calc(var(--safe-top) + 20px) 20px calc(var(--safe-bottom) + 20px) 20px;
+        }
+
+        .app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 30px; }
+
+        header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        
+        h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; letter-spacing: -2px; margin: 0; }
+
+        .main-layout { display: grid; grid-template-columns: 1fr; gap: 30px; }
+        @media (min-width: 850px) { .main-layout { grid-template-columns: 350px 1fr; align-items: start; } }
+
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
+        
+        .section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; }
+
+        input, textarea {
+            width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px;
+            padding: 14px; color: white; font-size: 16px; margin-bottom: 12px; outline: none;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        .upload-area:hover { border-color: #555; background: var(--glass); }
+        
+        #imagePreview { 
+            width: 100%; max-height: 200px; object-fit: cover; 
+            border-radius: 12px; margin-bottom: 12px; display: none; 
+        }
+
+        .btn {
+            display: flex; align-items: center; justify-content: center; padding: 14px;
+            border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; gap: 8px;
+        }
+        .btn-primary { background: var(--accent); color: black; width: 100%; }
+        .btn-secondary { background: var(--glass); color: white; width: 100%; margin-top: 10px; }
+
+        .entry { background: var(--panel); border: 1px solid var(--border); padding: 24px; border-radius: 20px; margin-bottom: 20px; }
+        .item-img { width: 100%; border-radius: 12px; margin: 15px 0; border: 1px solid var(--border); }
+
+        .qr-output { background: white; padding: 10px; border-radius: 12px; display: inline-block; margin-top: 15px; }
+
+        .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); align-items: center; }
+        .expunge-btn { color: var(--danger); cursor: pointer; }
+
+        /* Scanner Modal */
+        #scanner-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: black; z-index: 1000; display: none;
+            flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        video { width: 100%; max-width: 400px; border-radius: 24px; border: 1px solid var(--border); }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="scanner-overlay">
+    <span class="section-title">Scanning QR Code...</span>
+    <video id="video-preview" playsinline></video>
+    <canvas id="qr-canvas" class="hidden"></canvas>
+    <button class="btn btn-secondary" style="max-width: 200px; margin-top: 20px;" onclick="stopScanner()">Cancel</button>
+</div>
+
+<div class="app-container">
+    <header>
+        <h1>whats mine.</h1>
+        <div style="background: var(--glass); padding: 6px 12px; border-radius: 100px; font-size: 0.7rem; color: #00ff88;">Inventory Secure</div>
+    </header>
+
+    <div class="main-layout">
+        <div class="sidebar">
+            <div class="card">
+                <span class="section-title">Identify New Item</span>
+                <input type="text" id="itemName" placeholder="Item Name">
+                
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <span id="uploadLabel">Upload Image</span>
+                    <input type="file" id="fileInput" accept="image/*" style="display:none">
+                </div>
+                <img id="imagePreview">
+
+                <textarea id="itemDesc" rows="3" placeholder="Description..."></textarea>
+                <button class="btn btn-primary" id="saveItemBtn">Secure Item</button>
+                <button class="btn btn-secondary" onclick="startScanner()">Scan QR Code</button>
+            </div>
+        </div>
+
+        <div class="feed-section">
+            <span class="section-title">My Vault</span>
+            <div id="vaultList"></div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    import "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+    import "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDn3fqrdVcRnvkiX7t6TPJWrngXSrM_1p4",
+        authDomain: "my-a-ab8f3.firebaseapp.com",
+        projectId: "my-a-ab8f3",
+        storageBucket: "my-a-ab8f3.firebasestorage.app",
+        messagingSenderId: "65984042323",
+        appId: "1:65984042323:web:f4a5463bd4cc220d2c3da6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+    const inventoryCol = collection(db, "inventory");
+
+    // Preview Logic
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('imagePreview');
+    fileInput.onchange = e => {
+        const [file] = fileInput.files;
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
+            document.getElementById('uploadLabel').textContent = "Image Attached";
+        }
+    };
+
+    // Save Item
+    document.getElementById('saveItemBtn').onclick = async () => {
+        const name = document.getElementById('itemName').value;
+        const desc = document.getElementById('itemDesc').value;
+        const file = fileInput.files[0];
+        const btn = document.getElementById('saveItemBtn');
+
+        if (!name) return alert("Item needs a name.");
+        
+        btn.innerText = "Syncing...";
+        btn.disabled = true;
+
+        let imageUrl = null;
+        if (file) {
+            const storageRef = ref(storage, `inventory/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            imageUrl = await getDownloadURL(snapshot.ref);
+        }
+
+        await addDoc(inventoryCol, {
+            name, desc, imageUrl,
+            timestamp: Date.now()
+        });
+
+        // Reset UI
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemDesc').value = '';
+        fileInput.value = '';
+        preview.style.display = 'none';
+        document.getElementById('uploadLabel').textContent = "Upload Image";
+        btn.innerText = "Secure Item";
+        btn.disabled = false;
+    };
+
+    // Render Vault
+    onSnapshot(query(inventoryCol, orderBy("timestamp", "desc")), snap => {
+        const list = document.getElementById('vaultList');
+        list.innerHTML = '';
+        snap.forEach(record => {
+            const d = record.data();
+            const id = record.id;
+            const div = document.createElement('div');
+            div.className = 'entry';
+            div.innerHTML = `
+                <span style="font-weight:700; font-size: 1.2rem; color:white;">${d.name}</span>
+                <p style="color:#aaa; margin:10px 0;">${d.desc || 'No description provided.'}</p>
+                ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
+                <div class="qr-output" id="qr-${id}"></div>
+                <div class="entry-footer">
+                    <span>ID: ${id.substring(0,8).toUpperCase()}</span>
+                    <span class="expunge-btn" onclick="deleteItem('${id}')">Expunge</span>
+                </div>
+            `;
+            list.appendChild(div);
+            
+            new QRCode(document.getElementById(`qr-${id}`), {
+                text: id,
+                width: 120,
+                height: 120,
+                colorDark : "#000000",
+                colorLight : "#ffffff"
+            });
+        });
+    });
+
+    window.deleteItem = async id => { 
+        if(confirm("Expunge this item from the vault permanently?")) {
+            await deleteDoc(doc(db, "inventory", id)); 
+        }
+    };
+
+    // QR SCANNING LOGIC
+    let videoStream = null;
+    window.startScanner = () => {
+        const overlay = document.getElementById('scanner-overlay');
+        overlay.style.display = 'flex';
+        const video = document.getElementById('video-preview');
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(stream => {
+            videoStream = stream;
+            video.srcObject = stream;
+            video.play();
+            requestAnimationFrame(tick);
+        });
+    };
+
+    window.stopScanner = () => {
+        if (videoStream) videoStream.getTracks().forEach(t => t.stop());
+        document.getElementById('scanner-overlay').style.display = 'none';
+    };
+
+    function tick() {
+        const video = document.getElementById('video-preview');
+        const canvasElement = document.getElementById('qr-canvas');
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            const ctx = canvasElement.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            const imageData = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            if (code) {
+                stopScanner();
+                alert("Authenticated: This is yours. (ID: " + code.data + ")");
+                return;
+            }
+        }
+        if (document.getElementById('scanner-overlay').style.display === 'flex') {
+            requestAnimationFrame(tick);
+        }
+    }
+</script>
+
+</body>
+</html>
