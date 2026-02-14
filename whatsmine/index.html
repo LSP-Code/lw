@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>whats mine. | v1.2.4</title>
+    <title>whats mine. | v1.2.6</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -16,14 +16,12 @@
             --text-main: #efefef;
             --text-dim: #777;
             --danger: #ff453a;
-            --safe-top: env(safe-area-inset-top);
-            --safe-bottom: env(safe-area-inset-bottom);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             background-image: radial-gradient(at 0% 0%, rgba(40, 40, 40, 0.5) 0px, transparent 50%);
             color: var(--text-main);
@@ -31,76 +29,117 @@
             display: flex;
             justify-content: center;
             min-height: 100vh;
-            padding: calc(var(--safe-top) + 20px) 20px calc(var(--safe-bottom) + 20px) 20px;
+            padding: 40px 20px;
         }
 
-        .app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 30px; }
+        /* TIGHTER DESKTOP CONSTRAINT */
+        .app-container { 
+            width: 100%; 
+            max-width: 950px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+        }
 
-        header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .brand-block h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; letter-spacing: -2px; margin: 0; color: white; cursor: pointer; }
-        .version-tag { font-family: monospace; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; }
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            padding-bottom: 15px; 
+            border-bottom: 1px solid var(--border); 
+        }
+        
+        .brand-block h1 { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            letter-spacing: -1.5px; 
+            margin: 0; 
+            cursor: pointer; 
+        }
 
-        .main-layout { display: grid; grid-template-columns: 1fr; gap: 30px; }
-        @media (min-width: 850px) { .main-layout { grid-template-columns: 350px 1fr; align-items: start; } }
+        .version-tag { font-family: monospace; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px; }
 
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
-        .section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; }
+        /* TWO-COLUMN GRID SETUP */
+        .main-layout { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 25px; 
+        }
+        
+        @media (min-width: 850px) { 
+            .main-layout { grid-template-columns: 320px 1fr; } 
+        }
+
+        .card { 
+            background: var(--panel); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            padding: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+
+        .section-title { 
+            font-size: 0.7rem; 
+            font-weight: 700; 
+            color: var(--text-dim); 
+            text-transform: uppercase; 
+            margin-bottom: 15px; 
+            display: block; 
+            letter-spacing: 0.5px;
+        }
 
         input, textarea {
-            width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px;
-            padding: 14px; color: white; font-size: 16px; margin-bottom: 12px; outline: none;
+            width: 100%; background: #181818; border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; transition: 0.2s;
         }
+        input:focus { border-color: #444; }
 
         .upload-area {
-            border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center;
-            cursor: pointer; margin-bottom: 12px; transition: 0.2s;
+            border: 2px dashed var(--border); border-radius: 10px; padding: 15px; text-align: center;
+            cursor: pointer; margin-bottom: 12px; font-size: 0.8rem; color: var(--text-dim);
         }
-        .upload-area:hover { background: var(--glass); border-color: #555; }
         
-        #imagePreview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 12px; display: none; border: 1px solid var(--border); }
+        #imagePreview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; display: none; }
 
         .btn {
-            display: flex; align-items: center; justify-content: center; padding: 14px;
-            border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; gap: 8px;
+            display: flex; align-items: center; justify-content: center; padding: 12px;
+            border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; gap: 8px; font-size: 0.9rem;
         }
         .btn-primary { background: var(--accent); color: black; width: 100%; }
-        .btn-secondary { background: var(--glass); color: white; width: 100%; margin-top: 10px; }
+        .btn-secondary { background: var(--glass); color: white; width: 100%; margin-top: 8px; }
 
-        .entry { background: var(--panel); border: 1px solid var(--border); padding: 24px; border-radius: 20px; margin-bottom: 20px; position: relative; }
-        .item-img { width: 100%; border-radius: 12px; margin: 15px 0; border: 1px solid var(--border); }
+        /* ITEM ENTRIES */
+        .entry { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+        .item-img { width: 100%; border-radius: 10px; margin: 12px 0; border: 1px solid var(--border); }
 
-        .qr-wrapper { margin-top: 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-        .qr-output { background: white; padding: 10px; border-radius: 12px; display: inline-block; cursor: pointer; }
-        .qr-hint { font-size: 0.65rem; color: var(--text-dim); font-style: italic; }
+        .qr-wrapper { margin-top: 15px; display: flex; align-items: flex-start; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; }
+        .qr-output { background: white; padding: 8px; border-radius: 8px; cursor: pointer; }
+        .label-preview-text { font-size: 0.65rem; color: var(--text-dim); line-height: 1.4; }
+        .label-preview-text b { color: var(--text-main); display: block; margin-bottom: 4px; }
 
-        .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); }
+        .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-dim); }
         .expunge-btn { color: var(--danger); cursor: pointer; }
 
         #scanner-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: black; z-index: 3000; display: none;
-            flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+            flex-direction: column; align-items: center; justify-content: center;
         }
-        video { width: 100%; max-width: 400px; border-radius: 24px; border: 1px solid var(--border); }
+        video { width: 100%; max-width: 400px; border-radius: 20px; }
         
         #detail-view {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 2000; display: none;
-            justify-content: center; align-items: center; padding: 20px;
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.9); z-index: 2000; display: none;
+            justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(10px);
         }
-
-        .manifest-item { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 5px; color: #555; }
-        .manifest-item span:last-child { color: #aaa; font-family: monospace; }
     </style>
 </head>
 <body>
 
 <div id="scanner-overlay">
-    <span class="section-title">v1.2.4 // OPTICAL SENSOR</span>
     <video id="video-preview" playsinline></video>
     <canvas id="qr-canvas" style="display:none;"></canvas>
-    <button class="btn btn-secondary" style="max-width: 200px; margin-top: 20px;" onclick="stopScanner()">Terminte Scan</button>
+    <button class="btn btn-secondary" style="margin-top: 20px; width: auto;" onclick="stopScanner()">Cancel Scan</button>
 </div>
 
 <div id="detail-view">
@@ -111,41 +150,40 @@
     <header>
         <div class="brand-block">
             <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
-            <div class="version-tag">CORE_SYSTEM_v1.2.4</div>
+            <div class="version-tag">CORE_SYSTEM_v1.2.6</div>
         </div>
-        <div id="status-badge" style="background: var(--glass); padding: 6px 12px; border-radius: 100px; font-size: 0.7rem; color: #00ff88;">UPLINK_STABLE</div>
+        <div id="status-badge" style="font-size: 0.6rem; color: #00ff88; font-weight: 700;">UPLINK_STABLE</div>
     </header>
 
     <div class="main-layout">
-        <div class="sidebar">
+        <aside>
             <div class="card">
-                <span class="section-title">Secure Object</span>
-                <input type="text" id="itemName" placeholder="Object Identifier" autocomplete="off">
-                
+                <span class="section-title">Record Object</span>
+                <input type="text" id="itemName" placeholder="Item Name" autocomplete="off">
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                    <span id="uploadLabel">Visual Data Entry</span>
+                    <span id="uploadLabel">Upload Image</span>
                     <input type="file" id="fileInput" accept="image/*" style="display:none">
                 </div>
                 <img id="imagePreview">
-
-                <textarea id="itemDesc" rows="3" placeholder="Contextual notes..."></textarea>
+                <textarea id="itemDesc" rows="3" placeholder="Context/Notes..."></textarea>
                 <button class="btn btn-primary" id="saveItemBtn">Commit to Vault</button>
                 <button class="btn btn-secondary" onclick="startScanner()">Trigger Scanner</button>
             </div>
-
-            <div class="card" style="opacity: 0.6;">
-                <span class="section-title">Build Manifest</span>
-                <div class="manifest-item"><span>Build</span><span>1.2.4-STABLE</span></div>
-                <div class="manifest-item"><span>Hosting</span><span>ImgBB-API</span></div>
-                <div class="manifest-item"><span>Database</span><span>Firestore-Live</span></div>
-                <div class="manifest-item"><span>Encoding</span><span>QR-ECC-H</span></div>
+            
+            <div class="card" style="margin-top: 20px; opacity: 0.5; padding: 15px;">
+                <span class="section-title" style="margin-bottom: 5px;">Build Manifest</span>
+                <div style="font-size: 0.6rem; line-height: 1.8;">
+                    DESKTOP_OPTIMIZED: TRUE<br>
+                    OWNERSHIP_LABEL: v2.0<br>
+                    IMG_HOST: IMGBB
+                </div>
             </div>
-        </div>
+        </aside>
 
-        <div class="feed-section">
-            <span class="section-title">Live Vault Feed <span>SECURE</span></span>
+        <main>
+            <span class="section-title">Vault Feed</span>
             <div id="vaultList"></div>
-        </div>
+        </main>
     </div>
 </div>
 
@@ -156,7 +194,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const APP_VERSION = "1.2.4";
     const IMGBB_API_KEY = "d930d102762e2539450d6d7afceb9811";
     const firebaseConfig = {
         apiKey: "AIzaSyDn3fqrdVcRnvkiX7t6TPJWrngXSrM_1p4",
@@ -172,68 +209,64 @@
     const inventoryCol = collection(db, "inventory");
     const BASE_URL = "https://lsp-code.github.io/lw/whatsmine/";
 
-    // Deep Link Logic
+    // Deep Link
     window.addEventListener('DOMContentLoaded', async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const itemId = urlParams.get('id');
-        if (itemId) loadItem(itemId);
+        const id = new URLSearchParams(window.location.search).get('id');
+        if (id) {
+            const snap = await getDoc(doc(db, "inventory", id));
+            if (snap.exists()) {
+                const d = snap.data();
+                document.getElementById('detail-content').innerHTML = `
+                    <div style="color:white; font-size:0.6rem; font-weight:800; border:1px solid #444; display:inline-block; padding:2px 6px; border-radius:4px; margin-bottom:10px;">VERIFIED PROPERTY</div>
+                    <h2 style="margin:0 0 10px 0;">${d.name}</h2>
+                    ${d.imageUrl ? `<img src="${d.imageUrl}" style="width:100%; border-radius:8px; margin-bottom:10px;">` : ''}
+                    <p style="color:#888; font-size:0.8rem;">${d.desc || ''}</p>
+                    <button class="btn btn-primary" style="margin-top:15px;" onclick="window.location.href='${BASE_URL}'">Enter Vault</button>
+                `;
+                document.getElementById('detail-view').style.display = 'flex';
+            }
+        }
     });
 
-    async function loadItem(id) {
-        const docSnap = await getDoc(doc(db, "inventory", id));
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            document.getElementById('detail-content').innerHTML = `
-                <div style="background: #fff; color: #000; display: inline-block; padding: 4px 10px; font-weight: 800; font-size: 0.6rem; border-radius: 4px; margin-bottom: 10px;">AUTHENTICATED</div>
-                <h2 style="margin: 0 0 10px 0;">${data.name}</h2>
-                <div style="font-size: 0.6rem; color: #555; margin-bottom: 10px;">Captured on v${data.v || '1.0.0'}</div>
-                ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:100%; border-radius:12px; margin-bottom:15px;">` : ''}
-                <p style="color: #aaa; font-size: 0.9rem;">${data.desc || ''}</p>
-                <button class="btn btn-primary" style="margin-top: 20px;" onclick="window.location.href='${BASE_URL}'">Exit View</button>
-            `;
-            document.getElementById('detail-view').style.display = 'flex';
-        }
-    }
-
-    // UI Logic
+    // Image Upload Preview
     const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('imagePreview');
     fileInput.onchange = () => {
         const [file] = fileInput.files;
         if (file) {
-            preview.src = URL.createObjectURL(file);
-            preview.style.display = 'block';
-            document.getElementById('uploadLabel').textContent = "Visual Locked";
+            document.getElementById('imagePreview').src = URL.createObjectURL(file);
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('uploadLabel').textContent = "Visual Ready";
         }
     };
 
+    // Save
     document.getElementById('saveItemBtn').onclick = async () => {
         const name = document.getElementById('itemName').value;
         const desc = document.getElementById('itemDesc').value;
         const file = fileInput.files[0];
         const btn = document.getElementById('saveItemBtn');
 
-        if (!name) return alert("Identify the object.");
-        btn.innerText = "UPLOADING..."; btn.disabled = true;
+        if (!name) return alert("Item Name Required");
+        btn.innerText = "Syncing..."; btn.disabled = true;
 
         let imageUrl = "";
         if (file) {
-            const formData = new FormData();
-            formData.append("image", file);
-            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
+            const fd = new FormData(); fd.append("image", file);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: fd });
             const json = await res.json();
             imageUrl = json.data.url;
         }
 
-        await addDoc(inventoryCol, { name, desc, imageUrl, timestamp: Date.now(), v: APP_VERSION });
+        await addDoc(inventoryCol, { name, desc, imageUrl, timestamp: Date.now() });
         
         document.getElementById('itemName').value = '';
         document.getElementById('itemDesc').value = '';
         fileInput.value = '';
-        preview.style.display = 'none';
+        document.getElementById('imagePreview').style.display = 'none';
         btn.innerText = "Commit to Vault"; btn.disabled = false;
     };
 
+    // Feed
     onSnapshot(query(inventoryCol, orderBy("timestamp", "desc")), snap => {
         const list = document.getElementById('vaultList');
         list.innerHTML = '';
@@ -243,32 +276,75 @@
             const div = document.createElement('div');
             div.className = 'entry';
             div.innerHTML = `
-                <span style="font-weight:700; font-size: 1.4rem;">${d.name}</span>
-                <p style="color:#777; margin:8px 0;">${d.desc || ''}</p>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <span style="font-weight:700; font-size: 1.2rem;">${d.name}</span>
+                    <span class="expunge-btn" style="font-size:0.6rem; text-transform:uppercase;" onclick="deleteItem('${id}')">Expunge</span>
+                </div>
+                <p style="color:#666; font-size: 0.85rem; margin:8px 0;">${d.desc || ''}</p>
                 ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
                 <div class="qr-wrapper">
-                    <div class="qr-output" id="qr-${id}" onclick="downloadQR('${id}', '${d.name}')"></div>
-                    <span class="qr-hint">v${d.v || '1.0.0'} // Tap to save label</span>
-                </div>
-                <div class="entry-footer">
-                    <span>${new Date(d.timestamp).toLocaleDateString()}</span>
-                    <span class="expunge-btn" onclick="deleteItem('${id}')">Expunge</span>
+                    <div class="qr-output" id="qr-${id}" onclick="generatePhysicalLabel('${id}', '${d.name}')"></div>
+                    <div class="label-preview-text">
+                        <b>PROPERTY OF LOGAN WESTLAKE</b>
+                        Item: ${d.name}<br>
+                        <span style="font-size:0.5rem; opacity:0.5;">TAP CODE TO SAVE LABEL</span>
+                    </div>
                 </div>
             `;
             list.appendChild(div);
-            new QRCode(document.getElementById(`qr-${id}`), { text: `${BASE_URL}?id=${id}`, width: 140, height: 140, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.H });
+            new QRCode(document.getElementById(`qr-${id}`), { 
+                text: `${BASE_URL}?id=${id}`, 
+                width: 100, 
+                height: 100, 
+                colorDark: "#000", 
+                colorLight: "#fff", 
+                correctLevel: QRCode.CorrectLevel.H 
+            });
         });
     });
 
-    window.downloadQR = (id, name) => {
-        const canvas = document.querySelector(`#qr-${id} canvas`);
+    // CUSTOM LABEL GENERATION (Canvas based)
+    window.generatePhysicalLabel = (id, itemName) => {
+        const qrCanvas = document.querySelector(`#qr-${id} canvas`);
+        const labelCanvas = document.createElement('canvas');
+        const ctx = labelCanvas.getContext('2d');
+        
+        // Define dimensions for the physical sticker (Width 600px x Height 300px)
+        labelCanvas.width = 600;
+        labelCanvas.height = 250;
+        
+        // White Background
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, labelCanvas.width, labelCanvas.height);
+        
+        // Draw the QR Code
+        ctx.drawImage(qrCanvas, 20, 25, 200, 200);
+        
+        // Text Styling
+        ctx.fillStyle = "black";
+        ctx.font = "bold 24px Inter, sans-serif";
+        ctx.fillText("PROPERTY OF LOGAN WESTLAKE", 240, 80);
+        
+        ctx.font = "20px Inter, sans-serif";
+        ctx.fillStyle = "#555";
+        ctx.fillText(`ITEM: ${itemName.toUpperCase()}`, 240, 120);
+        
+        ctx.font = "14px monospace";
+        ctx.fillText(`ID: ${id.substring(0,12)}`, 240, 160);
+        
+        // Aesthetic border
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(5, 5, labelCanvas.width - 10, labelCanvas.height - 10);
+
+        // Download
         const link = document.createElement('a');
-        link.download = `LABEL-${name.replace(/\s+/g, '-').toUpperCase()}.png`;
-        link.href = canvas.toDataURL();
+        link.download = `LABEL-${itemName.toUpperCase()}.png`;
+        link.href = labelCanvas.toDataURL();
         link.click();
     };
 
-    window.deleteItem = async id => { if(confirm("Expunge record?")) await deleteDoc(doc(db, "inventory", id)); };
+    window.deleteItem = async id => { if(confirm("Permanently remove record?")) await deleteDoc(doc(db, "inventory", id)); };
 
     // Scanner
     let videoStream = null;
@@ -277,17 +353,14 @@
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(stream => {
             videoStream = stream;
             const v = document.getElementById('video-preview');
-            v.srcObject = stream;
-            v.play();
+            v.srcObject = stream; v.play();
             requestAnimationFrame(tick);
         });
     };
-
     window.stopScanner = () => {
         if(videoStream) videoStream.getTracks().forEach(t => t.stop());
         document.getElementById('scanner-overlay').style.display = 'none';
     };
-
     function tick() {
         const v = document.getElementById('video-preview');
         const c = document.getElementById('qr-canvas');
