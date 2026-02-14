@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>whats mine. | v1.2.7</title>
+    <title>whats mine. | v1.2.9</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
@@ -90,7 +90,6 @@
             width: 100%; background: #181818; border: 1px solid var(--border); border-radius: 10px;
             padding: 12px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; transition: 0.2s;
         }
-        input:focus { border-color: #444; }
 
         .upload-area {
             border: 2px dashed var(--border); border-radius: 10px; padding: 15px; text-align: center;
@@ -123,8 +122,7 @@
         .label-text { font-size: 0.7rem; color: var(--text-dim); line-height: 1.4; }
         .label-text b { color: var(--text-main); display: block; margin-bottom: 2px; font-size: 0.75rem; }
 
-        .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-dim); }
-        .expunge-btn { color: var(--danger); cursor: pointer; }
+        .expunge-btn { color: var(--danger); cursor: pointer; font-size: 0.65rem; text-transform: uppercase; }
 
         #scanner-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -135,8 +133,8 @@
         
         #detail-view {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 2000; display: none;
-            justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.95); z-index: 2000; display: none;
+            justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(15px);
         }
     </style>
 </head>
@@ -149,14 +147,14 @@
 </div>
 
 <div id="detail-view">
-    <div class="card" style="max-width: 400px; width: 100%;" id="detail-content"></div>
+    <div class="card" style="max-width: 400px; width: 100%; border-color: #00ff88;" id="detail-content"></div>
 </div>
 
 <div class="app-container">
     <header>
         <div class="brand-block">
             <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
-            <div class="version-tag">CORE_SYSTEM_v1.2.7</div>
+            <div class="version-tag">CORE_SYSTEM_v1.2.9</div>
         </div>
         <div id="status-badge" style="font-size: 0.6rem; color: #00ff88; font-weight: 700;">UPLINK_STABLE</div>
     </header>
@@ -206,7 +204,7 @@
     const inventoryCol = collection(db, "inventory");
     const BASE_URL = "https://lsp-code.github.io/lw/whatsmine/";
 
-    // Deep Link Check
+    // Deep Link Verification View
     window.addEventListener('DOMContentLoaded', async () => {
         const id = new URLSearchParams(window.location.search).get('id');
         if (id) {
@@ -214,18 +212,26 @@
             if (snap.exists()) {
                 const d = snap.data();
                 document.getElementById('detail-content').innerHTML = `
-                    <div style="color:white; font-size:0.6rem; font-weight:800; border:1px solid #444; display:inline-block; padding:2px 6px; border-radius:4px; margin-bottom:10px;">VERIFIED PROPERTY</div>
-                    <h2 style="margin:0 0 10px 0;">${d.name}</h2>
-                    ${d.imageUrl ? `<img src="${d.imageUrl}" style="width:100%; border-radius:8px; margin-bottom:10px;">` : ''}
-                    <p style="color:#888; font-size:0.8rem;">${d.desc || ''}</p>
-                    <button class="btn btn-primary" style="margin-top:15px;" onclick="window.location.href='${BASE_URL}'">Enter Vault</button>
+                    <div style="background: #00ff88; color: #000; display: inline-block; padding: 2px 8px; font-weight: 900; font-size: 0.6rem; border-radius: 4px; margin-bottom: 15px; letter-spacing: 1px;">OFFICIAL RECORD</div>
+                    <div style="margin-bottom: 20px;">
+                        <span style="display:block; color:#777; font-size:0.7rem; text-transform:uppercase; font-weight:700;">Owner</span>
+                        <span style="font-size:1.4rem; font-weight:800; color:#fff;">LOGAN WESTLAKE</span>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <span style="display:block; color:#777; font-size:0.7rem; text-transform:uppercase; font-weight:700;">Item Name</span>
+                        <span style="font-size:1.2rem; font-weight:600; color:#fff;">${d.name}</span>
+                    </div>
+                    ${d.imageUrl ? `<img src="${d.imageUrl}" style="width:100%; border-radius:12px; margin-bottom:15px; border: 1px solid var(--border);">` : ''}
+                    <div style="color:#888; font-size:0.85rem; line-height:1.5; background:rgba(255,255,255,0.03); padding:12px; border-radius:8px;">
+                        ${d.desc || 'No additional records attached.'}
+                    </div>
+                    <button class="btn btn-primary" style="margin-top:20px;" onclick="window.location.href='${BASE_URL}'">Access My Vault</button>
                 `;
                 document.getElementById('detail-view').style.display = 'flex';
             }
         }
     });
 
-    // Preview
     const fileInput = document.getElementById('fileInput');
     fileInput.onchange = () => {
         const [file] = fileInput.files;
@@ -236,7 +242,6 @@
         }
     };
 
-    // Save
     document.getElementById('saveItemBtn').onclick = async () => {
         const name = document.getElementById('itemName').value;
         const desc = document.getElementById('itemDesc').value;
@@ -263,7 +268,6 @@
         btn.innerText = "Commit to Vault"; btn.disabled = false;
     };
 
-    // Feed
     onSnapshot(query(inventoryCol, orderBy("timestamp", "desc")), snap => {
         const list = document.getElementById('vaultList');
         list.innerHTML = '';
@@ -280,11 +284,11 @@
                 <p style="color:#666; font-size: 0.85rem; margin:8px 0;">${d.desc || ''}</p>
                 ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
                 <div class="qr-wrapper">
-                    <div class="qr-output" id="qr-${id}" onclick="generateTag('${id}', '${d.name}')"></div>
+                    <div class="qr-output" id="qr-${id}" onclick="generateSquareTag('${id}', '${d.name}')"></div>
                     <div class="label-text">
                         <b>PROPERTY OF LOGAN WESTLAKE</b>
                         <span>${d.name}</span><br>
-                        <span style="font-size:0.55rem; opacity:0.5; margin-top:4px; display:block;">TAP QR TO DOWNLOAD TAG</span>
+                        <span style="font-size:0.55rem; opacity:0.5; margin-top:4px; display:block;">TAP FOR SCANNER-LINKED SQUARE TAG</span>
                     </div>
                 </div>
             `;
@@ -296,52 +300,49 @@
         });
     });
 
-    // PHYSICAL TAG GENERATOR
-    window.generateTag = (id, itemName) => {
+    window.generateSquareTag = (id, itemName) => {
         const qrCanvas = document.querySelector(`#qr-${id} canvas`);
         const tagCanvas = document.createElement('canvas');
         const ctx = tagCanvas.getContext('2d');
         
-        // Size for a clear physical label
-        tagCanvas.width = 800;
-        tagCanvas.height = 300;
+        const size = 500;
+        tagCanvas.width = size;
+        tagCanvas.height = size;
         
-        // Clean white background
         ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, tagCanvas.width, tagCanvas.height);
+        ctx.fillRect(0, 0, size, size);
         
-        // Draw QR
-        ctx.drawImage(qrCanvas, 30, 30, 240, 240);
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
         
-        // Header Text
+        ctx.font = "bold 24px Inter, sans-serif";
+        ctx.fillText("PROPERTY OF", size/2, 45);
+        ctx.font = "bold 28px Inter, sans-serif";
+        ctx.fillText("LOGAN WESTLAKE", size/2, 80);
+        
+        const qrSize = 280;
+        ctx.drawImage(qrCanvas, (size - qrSize)/2, 105, qrSize, qrSize);
+        
         ctx.fillStyle = "black";
         ctx.font = "bold 32px Inter, sans-serif";
-        ctx.fillText("PROPERTY OF LOGAN WESTLAKE", 300, 90);
+        ctx.fillText(itemName.toUpperCase(), size/2, 430);
         
-        // Item Name (Larger)
-        ctx.font = "bold 48px Inter, sans-serif";
-        ctx.fillText(itemName.toUpperCase(), 300, 160);
+        ctx.font = "14px monospace";
+        ctx.fillStyle = "#888";
+        ctx.fillText(`VAULT_ID: ${id.substring(0,12)}`, size/2, 465);
         
-        // Footer Detail
-        ctx.font = "24px Inter, sans-serif";
-        ctx.fillStyle = "#666";
-        ctx.fillText(`VAULT ID: ${id.substring(0,14)}`, 300, 220);
-        
-        // Thick Outer Border
         ctx.strokeStyle = "black";
-        ctx.lineWidth = 10;
-        ctx.strokeRect(5, 5, tagCanvas.width - 10, tagCanvas.height - 10);
+        ctx.lineWidth = 12;
+        ctx.strokeRect(6, 6, size-12, size-12);
 
-        // Instant Download
         const link = document.createElement('a');
-        link.download = `TAG-${itemName.toUpperCase()}.png`;
+        link.download = `VERIFIED-TAG-${itemName.toUpperCase()}.png`;
         link.href = tagCanvas.toDataURL("image/png");
         link.click();
     };
 
     window.deleteItem = async id => { if(confirm("Permanently remove record?")) await deleteDoc(doc(db, "inventory", id)); };
 
-    // Scanner
     let videoStream = null;
     window.startScanner = () => {
         document.getElementById('scanner-overlay').style.display = 'flex';
