@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>whats mine. | v1.3.1</title>
+    <title>whats mine. | v1.3.2</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
@@ -16,6 +16,7 @@
             --text-main: #efefef;
             --text-dim: #777;
             --danger: #ff453a;
+            --success: #00ff88;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -45,8 +46,7 @@
         .section-title { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 0.5px; }
 
         input, textarea { width: 100%; background: #181818; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; border: 1px solid transparent; }
-        input:focus { border-color: var(--border); }
-
+        
         .upload-area { border: 2px dashed var(--border); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; margin-bottom: 12px; font-size: 0.8rem; color: var(--text-dim); }
         #imagePreview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; display: none; }
 
@@ -59,16 +59,29 @@
 
         .qr-wrapper { margin-top: 15px; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
         .qr-output { background: white; padding: 6px; border-radius: 6px; cursor: pointer; }
-        .label-text { font-size: 0.7rem; color: var(--text-dim); line-height: 1.4; }
-        .label-text b { color: var(--text-main); display: block; margin-bottom: 2px; font-size: 0.75rem; }
 
-        #save-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px); }
-        #final-label-img { width: 100%; max-width: 500px; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); margin-bottom: 20px; border: 1px solid white; background: white; }
+        /* MODALS */
+        #save-modal, #detail-view { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); z-index: 5000; display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            padding: 20px; backdrop-filter: blur(15px); 
+        }
 
-        #scanner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: black; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #detail-content { 
+            max-width: 450px; width: 100%; border-color: var(--success); 
+            max-height: 85vh; overflow-y: auto; position: relative;
+        }
+
+        #final-label-img { width: 100%; max-width: 500px; border-radius: 4px; border: 1px solid white; background: white; margin-bottom: 20px; }
+
+        #scanner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: black; z-index: 6000; display: none; flex-direction: column; align-items: center; justify-content: center; }
         video { width: 100%; max-width: 400px; border-radius: 20px; }
-        
-        #detail-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(15px); }
+
+        /* Custom Scrollbar for Detail View */
+        #detail-content::-webkit-scrollbar { width: 4px; }
+        #detail-content::-webkit-scrollbar-track { background: transparent; }
+        #detail-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -86,16 +99,17 @@
 </div>
 
 <div id="detail-view">
-    <div class="card" style="max-width: 400px; width: 100%; border-color: #00ff88;" id="detail-content"></div>
+    <div class="card" id="detail-content">
+        </div>
 </div>
 
 <div class="app-container">
     <header>
         <div class="brand-block">
             <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
-            <div class="version-tag">CORE_SYSTEM_v1.3.1</div>
+            <div class="version-tag">CORE_SYSTEM_v1.3.2</div>
         </div>
-        <div id="status-badge" style="font-size: 0.6rem; color: #00ff88; font-weight: 700;">UPLINK_STABLE</div>
+        <div id="status-badge" style="font-size: 0.6rem; color: var(--success); font-weight: 700;">UPLINK_STABLE</div>
     </header>
 
     <div class="main-layout">
@@ -143,7 +157,6 @@
     const inventoryCol = collection(db, "inventory");
     const BASE_URL = "https://lsp-code.github.io/lw/whatsmine/";
 
-    // Handle deep link
     window.addEventListener('DOMContentLoaded', async () => {
         const id = new URLSearchParams(window.location.search).get('id');
         if (id) {
@@ -151,24 +164,31 @@
             if (snap.exists()) {
                 const d = snap.data();
                 document.getElementById('detail-content').innerHTML = `
-                    <div style="background: #00ff88; color: #000; display: inline-block; padding: 2px 8px; font-weight: 900; font-size: 0.6rem; border-radius: 4px; margin-bottom: 15px; letter-spacing: 1px;">OFFICIAL RECORD</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <div style="background: var(--success); color: #000; padding: 2px 8px; font-weight: 900; font-size: 0.6rem; border-radius: 4px; letter-spacing: 1px;">OFFICIAL RECORD</div>
+                        <span style="color:var(--text-dim); font-size:1.2rem; cursor:pointer;" onclick="document.getElementById('detail-view').style.display='none'">✕</span>
+                    </div>
                     <div style="margin-bottom: 20px;">
-                        <span style="display:block; color:#777; font-size:0.7rem; text-transform:uppercase; font-weight:700;">Owner</span>
+                        <span style="display:block; color:var(--text-dim); font-size:0.7rem; text-transform:uppercase; font-weight:700; letter-spacing:1px;">Owner</span>
                         <span style="font-size:1.4rem; font-weight:800; color:#fff;">LOGAN WESTLAKE</span>
                     </div>
                     <div style="margin-bottom: 20px;">
-                        <span style="display:block; color:#777; font-size:0.7rem; text-transform:uppercase; font-weight:700;">Item Name</span>
+                        <span style="display:block; color:var(--text-dim); font-size:0.7rem; text-transform:uppercase; font-weight:700; letter-spacing:1px;">Item Name</span>
                         <span style="font-size:1.2rem; font-weight:600; color:#fff;">${d.name}</span>
                     </div>
                     ${d.imageUrl ? `<img src="${d.imageUrl}" style="width:100%; border-radius:12px; margin-bottom:15px; border: 1px solid var(--border);">` : ''}
-                    <div style="color:#888; font-size:0.85rem; line-height:1.5; background:rgba(255,255,255,0.03); padding:12px; border-radius:8px;">${d.desc || 'No additional records attached.'}</div>
+                    <div style="color:var(--text-dim); font-size:0.85rem; line-height:1.6; background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border: 1px solid var(--border);">
+                        ${d.desc || 'No additional records attached.'}
+                    </div>
                     <button class="btn btn-primary" style="margin-top:20px;" onclick="window.location.href='${BASE_URL}'">Access My Vault</button>
+                    <div style="height:20px;"></div>
                 `;
                 document.getElementById('detail-view').style.display = 'flex';
             }
         }
     });
 
+    // File Preview Logic
     const fileInput = document.getElementById('fileInput');
     fileInput.onchange = () => {
         const [file] = fileInput.files;
@@ -179,6 +199,7 @@
         }
     };
 
+    // Commit to Firebase
     document.getElementById('saveItemBtn').onclick = async () => {
         const name = document.getElementById('itemName').value;
         const desc = document.getElementById('itemDesc').value;
@@ -201,6 +222,7 @@
         btn.innerText = "Commit to Vault"; btn.disabled = false;
     };
 
+    // Live Feed Listener
     onSnapshot(query(inventoryCol, orderBy("timestamp", "desc")), snap => {
         const list = document.getElementById('vaultList');
         list.innerHTML = '';
@@ -212,75 +234,49 @@
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <span style="font-weight:700; font-size: 1.2rem;">${d.name}</span>
-                    <span class="expunge-btn" onclick="deleteItem('${id}')">Expunge</span>
+                    <span class="expunge-btn" onclick="deleteItem('${id}')" style="color:var(--danger); cursor:pointer; font-size:0.6rem; font-weight:800;">EXPUNGE</span>
                 </div>
                 <p style="color:#666; font-size: 0.85rem; margin:8px 0;">${d.desc || ''}</p>
                 ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
                 <div class="qr-wrapper">
                     <div class="qr-output" id="qr-${id}" onclick="generateHDTag('${id}', '${d.name}')"></div>
                     <div class="label-text">
-                        <b>LOGAN WESTLAKE</b>
-                        <span>${d.name}</span><br>
+                        <b style="color:#fff;">LOGAN WESTLAKE</b>
+                        <span style="color:#777;">${d.name}</span><br>
                         <span style="font-size:0.55rem; opacity:0.5; margin-top:4px; display:block;">TAP FOR PRINT-STABLE HD TAG</span>
                     </div>
                 </div>
             `;
             list.appendChild(div);
-            // Enhanced QR Resolution & Error Correction
             new QRCode(document.getElementById(`qr-${id}`), { 
-                text: `${BASE_URL}?id=${id}`, 
-                width: 256, 
-                height: 256, 
-                colorDark: "#000000", 
-                colorLight: "#ffffff", 
-                correctLevel: QRCode.CorrectLevel.H 
+                text: `${BASE_URL}?id=${id}`, width: 256, height: 256, 
+                colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H 
             });
         });
     });
 
+    // HD Tag Generator
     window.generateHDTag = (id, itemName) => {
         const qrCanvas = document.querySelector(`#qr-${id} canvas`);
         const tagCanvas = document.createElement('canvas');
         const ctx = tagCanvas.getContext('2d');
-        
-        // HUGE RESOLUTION FOR PRINT SCALING (2000px)
         const size = 2000;
-        tagCanvas.width = size;
-        tagCanvas.height = size;
-        
-        // Background
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, size, size);
-        
-        // Text Logic
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        
+        tagCanvas.width = size; tagCanvas.height = size;
+        ctx.fillStyle = "white"; ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = "black"; ctx.textAlign = "center";
         ctx.font = "bold 90px Inter, sans-serif";
         ctx.fillText("PROPERTY OF", size/2, 200);
         ctx.font = "bold 110px Inter, sans-serif";
         ctx.fillText("LOGAN WESTLAKE", size/2, 330);
-        
-        // Draw QR code with pixel-perfect scaling
         const qrSize = 1100;
-        ctx.imageSmoothingEnabled = false; // Keep QR edges sharp
+        ctx.imageSmoothingEnabled = false;
         ctx.drawImage(qrCanvas, (size - qrSize)/2, 420, qrSize, qrSize);
-        
-        // Footer Item Name
         ctx.font = "bold 130px Inter, sans-serif";
         ctx.fillText(itemName.toUpperCase(), size/2, 1720);
-        
-        // Detailed ID
-        ctx.font = "45px monospace";
-        ctx.fillStyle = "#555";
+        ctx.font = "45px monospace"; ctx.fillStyle = "#555";
         ctx.fillText(`ASSET_ID: ${id}`, size/2, 1860);
-        
-        // Thick Sharp Border
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 50;
+        ctx.strokeStyle = "black"; ctx.lineWidth = 50;
         ctx.strokeRect(25, 25, size-50, size-50);
-
-        // Preview for Long-Press
         const imgData = tagCanvas.toDataURL("image/png", 1.0);
         document.getElementById('final-label-img').src = imgData;
         document.getElementById('save-modal').style.display = 'flex';
@@ -288,7 +284,7 @@
 
     window.deleteItem = async id => { if(confirm("Permanently remove record?")) await deleteDoc(doc(db, "inventory", id)); };
 
-    // Scanner
+    // Scanner Logic
     let videoStream = null;
     window.startScanner = () => {
         document.getElementById('scanner-overlay').style.display = 'flex';
