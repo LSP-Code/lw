@@ -37,14 +37,12 @@
         .app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 30px; }
 
         header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        
         h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; letter-spacing: -2px; margin: 0; }
 
         .main-layout { display: grid; grid-template-columns: 1fr; gap: 30px; }
         @media (min-width: 850px) { .main-layout { grid-template-columns: 350px 1fr; align-items: start; } }
 
         .card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
-        
         .section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; }
 
         input, textarea {
@@ -53,20 +51,12 @@
         }
 
         .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 12px;
-            transition: all 0.2s;
+            border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center;
+            cursor: pointer; margin-bottom: 12px; transition: all 0.2s;
         }
         .upload-area:hover { border-color: #555; background: var(--glass); }
         
-        #imagePreview { 
-            width: 100%; max-height: 200px; object-fit: cover; 
-            border-radius: 12px; margin-bottom: 12px; display: none; 
-        }
+        #imagePreview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 12px; display: none; }
 
         .btn {
             display: flex; align-items: center; justify-content: center; padding: 14px;
@@ -78,12 +68,13 @@
         .entry { background: var(--panel); border: 1px solid var(--border); padding: 24px; border-radius: 20px; margin-bottom: 20px; }
         .item-img { width: 100%; border-radius: 12px; margin: 15px 0; border: 1px solid var(--border); }
 
-        .qr-output { background: white; padding: 10px; border-radius: 12px; display: inline-block; margin-top: 15px; }
+        .qr-container { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 15px; }
+        .qr-output { background: white; padding: 10px; border-radius: 12px; display: inline-block; }
+        .qr-hint { font-size: 0.7rem; color: var(--text-dim); }
 
         .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); align-items: center; }
         .expunge-btn { color: var(--danger); cursor: pointer; }
 
-        /* Scanner Modal */
         #scanner-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: black; z-index: 1000; display: none;
@@ -92,54 +83,67 @@
         video { width: 100%; max-width: 400px; border-radius: 24px; border: 1px solid var(--border); }
         
         .hidden { display: none; }
+
+        /* Scanned Detail Modal */
+        #detail-view {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000; display: none;
+            justify-content: center; align-items: center; padding: 20px;
+        }
     </style>
 </head>
 <body>
 
 <div id="scanner-overlay">
-    <span class="section-title">Scanning QR Code...</span>
+    <span class="section-title">Scanning Label...</span>
     <video id="video-preview" playsinline></video>
     <canvas id="qr-canvas" class="hidden"></canvas>
     <button class="btn btn-secondary" style="max-width: 200px; margin-top: 20px;" onclick="stopScanner()">Cancel</button>
 </div>
 
+<div id="detail-view">
+    <div class="card" style="max-width: 400px; width: 100%;" id="detail-content">
+        </div>
+</div>
+
 <div class="app-container">
     <header>
-        <h1>whats mine.</h1>
-        <div style="background: var(--glass); padding: 6px 12px; border-radius: 100px; font-size: 0.7rem; color: #00ff88;">Inventory Secure</div>
+        <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
+        <div id="auth-badge" style="background: var(--glass); padding: 6px 12px; border-radius: 100px; font-size: 0.7rem; color: #777;">Vault Active</div>
     </header>
 
     <div class="main-layout">
         <div class="sidebar">
             <div class="card">
-                <span class="section-title">Identify New Item</span>
-                <input type="text" id="itemName" placeholder="Item Name">
+                <span class="section-title">Secure New Item</span>
+                <input type="text" id="itemName" placeholder="Object Name">
                 
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                    <span id="uploadLabel">Upload Image</span>
+                    <span id="uploadLabel">Add Visual Evidence</span>
                     <input type="file" id="fileInput" accept="image/*" style="display:none">
                 </div>
                 <img id="imagePreview">
 
-                <textarea id="itemDesc" rows="3" placeholder="Description..."></textarea>
-                <button class="btn btn-primary" id="saveItemBtn">Secure Item</button>
-                <button class="btn btn-secondary" onclick="startScanner()">Scan QR Code</button>
+                <textarea id="itemDesc" rows="3" placeholder="Description / Provenance..."></textarea>
+                <button class="btn btn-primary" id="saveItemBtn">Sync to Vault</button>
+                <button class="btn btn-secondary" onclick="startScanner()">Scan Physical Label</button>
             </div>
         </div>
 
         <div class="feed-section">
-            <span class="section-title">My Vault</span>
+            <span class="section-title">Inventory Records</span>
             <div id="vaultList"></div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-    import "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
-    import "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDn3fqrdVcRnvkiX7t6TPJWrngXSrM_1p4",
@@ -154,28 +158,68 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
     const inventoryCol = collection(db, "inventory");
+    const BASE_URL = "https://lsp-code.github.io/lw/whatsmine/";
 
-    // Preview Logic
+    // --- DEEP LINK DETECTION ---
+    window.addEventListener('DOMContentLoaded', async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('id');
+        if (itemId) {
+            document.getElementById('auth-badge').textContent = "Authenticating...";
+            document.getElementById('auth-badge').style.color = "#ffcc00";
+            showItemDetail(itemId);
+        }
+    });
+
+    async function showItemDetail(id) {
+        const docRef = doc(db, "inventory", id);
+        const docSnap = await getDoc(docRef);
+        const detailView = document.getElementById('detail-view');
+        const detailContent = document.getElementById('detail-content');
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            detailContent.innerHTML = `
+                <div style="background: #fff; color: #000; display: inline-block; padding: 4px 10px; font-weight: 800; font-size: 0.6rem; border-radius: 4px; margin-bottom: 10px;">VERIFIED OWNERSHIP</div>
+                <h2 style="margin: 0 0 15px 0; font-size: 1.8rem;">${data.name}</h2>
+                ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:100%; border-radius:12px; margin-bottom:15px;">` : ''}
+                <p style="color: #aaa; line-height: 1.6;">${data.desc || 'No description provided.'}</p>
+                <button class="btn btn-primary" style="margin-top: 20px;" onclick="closeDetail()">Return to Vault</button>
+            `;
+            detailView.style.display = 'flex';
+            document.getElementById('auth-badge').textContent = "Verified";
+            document.getElementById('auth-badge').style.color = "#00ff88";
+        } else {
+            alert("This item ID does not exist in your vault.");
+            window.location.href = BASE_URL;
+        }
+    }
+
+    window.closeDetail = () => {
+        document.getElementById('detail-view').style.display = 'none';
+        window.history.replaceState({}, document.title, BASE_URL);
+    };
+
+    // --- FILE PREVIEW ---
     const fileInput = document.getElementById('fileInput');
     const preview = document.getElementById('imagePreview');
-    fileInput.onchange = e => {
+    fileInput.onchange = () => {
         const [file] = fileInput.files;
         if (file) {
             preview.src = URL.createObjectURL(file);
             preview.style.display = 'block';
-            document.getElementById('uploadLabel').textContent = "Image Attached";
+            document.getElementById('uploadLabel').textContent = "Image Ready";
         }
     };
 
-    // Save Item
+    // --- SAVE TO FIREBASE ---
     document.getElementById('saveItemBtn').onclick = async () => {
         const name = document.getElementById('itemName').value;
         const desc = document.getElementById('itemDesc').value;
         const file = fileInput.files[0];
         const btn = document.getElementById('saveItemBtn');
 
-        if (!name) return alert("Item needs a name.");
-        
+        if (!name) return alert("Identify the object.");
         btn.innerText = "Syncing...";
         btn.disabled = true;
 
@@ -186,65 +230,62 @@
             imageUrl = await getDownloadURL(snapshot.ref);
         }
 
-        await addDoc(inventoryCol, {
-            name, desc, imageUrl,
-            timestamp: Date.now()
-        });
+        await addDoc(inventoryCol, { name, desc, imageUrl, timestamp: Date.now() });
 
-        // Reset UI
+        // Reset
         document.getElementById('itemName').value = '';
         document.getElementById('itemDesc').value = '';
         fileInput.value = '';
         preview.style.display = 'none';
-        document.getElementById('uploadLabel').textContent = "Upload Image";
-        btn.innerText = "Secure Item";
+        btn.innerText = "Sync to Vault";
         btn.disabled = false;
     };
 
-    // Render Vault
+    // --- RENDER FEED ---
     onSnapshot(query(inventoryCol, orderBy("timestamp", "desc")), snap => {
         const list = document.getElementById('vaultList');
         list.innerHTML = '';
         snap.forEach(record => {
             const d = record.data();
             const id = record.id;
+            const fullUrl = `${BASE_URL}?id=${id}`;
             const div = document.createElement('div');
             div.className = 'entry';
             div.innerHTML = `
-                <span style="font-weight:700; font-size: 1.2rem; color:white;">${d.name}</span>
-                <p style="color:#aaa; margin:10px 0;">${d.desc || 'No description provided.'}</p>
+                <span style="font-weight:700; font-size: 1.3rem;">${d.name}</span>
+                <p style="color:#777; margin:10px 0;">${d.desc || ''}</p>
                 ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
-                <div class="qr-output" id="qr-${id}"></div>
+                <div class="qr-container">
+                    <div class="qr-output" id="qr-${id}"></div>
+                    <span class="qr-hint">Long-press code to Save to Camera Roll</span>
+                </div>
                 <div class="entry-footer">
-                    <span>ID: ${id.substring(0,8).toUpperCase()}</span>
+                    <span>RECORD: ${id.substring(0,8).toUpperCase()}</span>
                     <span class="expunge-btn" onclick="deleteItem('${id}')">Expunge</span>
                 </div>
             `;
             list.appendChild(div);
             
             new QRCode(document.getElementById(`qr-${id}`), {
-                text: id,
-                width: 120,
-                height: 120,
+                text: fullUrl,
+                width: 140,
+                height: 140,
                 colorDark : "#000000",
-                colorLight : "#ffffff"
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
             });
         });
     });
 
     window.deleteItem = async id => { 
-        if(confirm("Expunge this item from the vault permanently?")) {
-            await deleteDoc(doc(db, "inventory", id)); 
-        }
+        if(confirm("Expunge permanently?")) await deleteDoc(doc(db, "inventory", id)); 
     };
 
-    // QR SCANNING LOGIC
+    // --- SCANNER LOGIC ---
     let videoStream = null;
     window.startScanner = () => {
-        const overlay = document.getElementById('scanner-overlay');
-        overlay.style.display = 'flex';
+        document.getElementById('scanner-overlay').style.display = 'flex';
         const video = document.getElementById('video-preview');
-
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(stream => {
             videoStream = stream;
             video.srcObject = stream;
@@ -270,7 +311,7 @@
             const code = jsQR(imageData.data, imageData.width, imageData.height);
             if (code) {
                 stopScanner();
-                alert("Authenticated: This is yours. (ID: " + code.data + ")");
+                window.location.href = code.data;
                 return;
             }
         }
