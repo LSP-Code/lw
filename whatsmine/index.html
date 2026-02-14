@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>whats mine. | Inventory Vault</title>
+    <title>whats mine. | v1.2.4</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -37,48 +37,44 @@
         .app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 30px; }
 
         header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; letter-spacing: -2px; margin: 0; color: white; text-decoration: none; cursor: pointer; }
+        .brand-block h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; letter-spacing: -2px; margin: 0; color: white; cursor: pointer; }
+        .version-tag { font-family: monospace; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; }
 
         .main-layout { display: grid; grid-template-columns: 1fr; gap: 30px; }
         @media (min-width: 850px) { .main-layout { grid-template-columns: 350px 1fr; align-items: start; } }
 
         .card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
-        .section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; }
+        .section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; }
 
         input, textarea {
             width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px;
-            padding: 14px; color: white; font-size: 16px; margin-bottom: 12px; outline: none; transition: border 0.2s;
+            padding: 14px; color: white; font-size: 16px; margin-bottom: 12px; outline: none;
         }
-        input:focus { border-color: var(--accent); }
 
         .upload-area {
             border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center;
-            cursor: pointer; margin-bottom: 12px; transition: all 0.2s;
+            cursor: pointer; margin-bottom: 12px; transition: 0.2s;
         }
-        .upload-area:hover { border-color: #555; background: var(--glass); }
+        .upload-area:hover { background: var(--glass); border-color: #555; }
         
         #imagePreview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 12px; display: none; border: 1px solid var(--border); }
 
         .btn {
             display: flex; align-items: center; justify-content: center; padding: 14px;
-            border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; gap: 8px;
+            border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; gap: 8px;
         }
         .btn-primary { background: var(--accent); color: black; width: 100%; }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-secondary { background: var(--glass); color: white; width: 100%; margin-top: 10px; }
 
-        .entry { background: var(--panel); border: 1px solid var(--border); padding: 24px; border-radius: 20px; margin-bottom: 20px; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
+        .entry { background: var(--panel); border: 1px solid var(--border); padding: 24px; border-radius: 20px; margin-bottom: 20px; position: relative; }
         .item-img { width: 100%; border-radius: 12px; margin: 15px 0; border: 1px solid var(--border); }
 
         .qr-wrapper { margin-top: 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-        .qr-output { background: white; padding: 10px; border-radius: 12px; display: inline-block; cursor: pointer; transition: transform 0.2s; }
-        .qr-output:active { transform: scale(0.95); }
-        .qr-hint { font-size: 0.65rem; color: var(--text-dim); }
+        .qr-output { background: white; padding: 10px; border-radius: 12px; display: inline-block; cursor: pointer; }
+        .qr-hint { font-size: 0.65rem; color: var(--text-dim); font-style: italic; }
 
-        .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); align-items: center; }
-        .expunge-btn { color: var(--danger); cursor: pointer; font-weight: 600; }
+        .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); }
+        .expunge-btn { color: var(--danger); cursor: pointer; }
 
         #scanner-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -87,23 +83,24 @@
         }
         video { width: 100%; max-width: 400px; border-radius: 24px; border: 1px solid var(--border); }
         
-        .hidden { display: none; }
-
         #detail-view {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 2000; display: none;
             justify-content: center; align-items: center; padding: 20px;
             backdrop-filter: blur(10px);
         }
+
+        .manifest-item { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 5px; color: #555; }
+        .manifest-item span:last-child { color: #aaa; font-family: monospace; }
     </style>
 </head>
 <body>
 
 <div id="scanner-overlay">
-    <span class="section-title">Optical Scanner Active</span>
+    <span class="section-title">v1.2.4 // OPTICAL SENSOR</span>
     <video id="video-preview" playsinline></video>
-    <canvas id="qr-canvas" class="hidden"></canvas>
-    <button class="btn btn-secondary" style="max-width: 200px; margin-top: 20px;" onclick="stopScanner()">Abort Scan</button>
+    <canvas id="qr-canvas" style="display:none;"></canvas>
+    <button class="btn btn-secondary" style="max-width: 200px; margin-top: 20px;" onclick="stopScanner()">Terminte Scan</button>
 </div>
 
 <div id="detail-view">
@@ -112,30 +109,41 @@
 
 <div class="app-container">
     <header>
-        <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
-        <div id="status-badge" style="background: var(--glass); padding: 6px 12px; border-radius: 100px; font-size: 0.7rem; color: #777;">System Ready</div>
+        <div class="brand-block">
+            <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
+            <div class="version-tag">CORE_SYSTEM_v1.2.4</div>
+        </div>
+        <div id="status-badge" style="background: var(--glass); padding: 6px 12px; border-radius: 100px; font-size: 0.7rem; color: #00ff88;">UPLINK_STABLE</div>
     </header>
 
     <div class="main-layout">
         <div class="sidebar">
             <div class="card">
-                <span class="section-title">Record Object</span>
-                <input type="text" id="itemName" placeholder="Object Name" autocomplete="off">
+                <span class="section-title">Secure Object</span>
+                <input type="text" id="itemName" placeholder="Object Identifier" autocomplete="off">
                 
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                    <span id="uploadLabel">Capture / Upload Evidence</span>
+                    <span id="uploadLabel">Visual Data Entry</span>
                     <input type="file" id="fileInput" accept="image/*" style="display:none">
                 </div>
                 <img id="imagePreview">
 
-                <textarea id="itemDesc" rows="3" placeholder="Notes on provenance or condition..."></textarea>
+                <textarea id="itemDesc" rows="3" placeholder="Contextual notes..."></textarea>
                 <button class="btn btn-primary" id="saveItemBtn">Commit to Vault</button>
-                <button class="btn btn-secondary" onclick="startScanner()">Scan Physical Item</button>
+                <button class="btn btn-secondary" onclick="startScanner()">Trigger Scanner</button>
+            </div>
+
+            <div class="card" style="opacity: 0.6;">
+                <span class="section-title">Build Manifest</span>
+                <div class="manifest-item"><span>Build</span><span>1.2.4-STABLE</span></div>
+                <div class="manifest-item"><span>Hosting</span><span>ImgBB-API</span></div>
+                <div class="manifest-item"><span>Database</span><span>Firestore-Live</span></div>
+                <div class="manifest-item"><span>Encoding</span><span>QR-ECC-H</span></div>
             </div>
         </div>
 
         <div class="feed-section">
-            <span class="section-title">Vault Records</span>
+            <span class="section-title">Live Vault Feed <span>SECURE</span></span>
             <div id="vaultList"></div>
         </div>
     </div>
@@ -148,8 +156,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- CONFIGURATION ---
-    const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY"; // <--- PUT YOUR KEY HERE
+    const APP_VERSION = "1.2.4";
+    const IMGBB_API_KEY = "d930d102762e2539450d6d7afceb9811";
     const firebaseConfig = {
         apiKey: "AIzaSyDn3fqrdVcRnvkiX7t6TPJWrngXSrM_1p4",
         authDomain: "my-a-ab8f3.firebaseapp.com",
@@ -164,39 +172,30 @@
     const inventoryCol = collection(db, "inventory");
     const BASE_URL = "https://lsp-code.github.io/lw/whatsmine/";
 
-    // --- DEEP LINKING (ID DETECTION) ---
+    // Deep Link Logic
     window.addEventListener('DOMContentLoaded', async () => {
         const urlParams = new URLSearchParams(window.location.search);
         const itemId = urlParams.get('id');
-        if (itemId) {
-            document.getElementById('status-badge').textContent = "Authenticating...";
-            document.getElementById('status-badge').style.color = "#ffcc00";
-            loadDeepLink(itemId);
-        }
+        if (itemId) loadItem(itemId);
     });
 
-    async function loadDeepLink(id) {
-        try {
-            const docRef = doc(db, "inventory", id);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const content = document.getElementById('detail-content');
-                content.innerHTML = `
-                    <div style="background: #fff; color: #000; display: inline-block; padding: 4px 10px; font-weight: 800; font-size: 0.6rem; border-radius: 4px; margin-bottom: 10px;">VERIFIED ITEM</div>
-                    <h2 style="margin: 0 0 10px 0;">${data.name}</h2>
-                    ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:100%; border-radius:12px; margin-bottom:15px;">` : ''}
-                    <p style="color: #aaa; font-size: 0.9rem; line-height: 1.5;">${data.desc || 'No additional records found.'}</p>
-                    <button class="btn btn-primary" style="margin-top: 20px;" onclick="window.location.href='${BASE_URL}'">Enter My Vault</button>
-                `;
-                document.getElementById('detail-view').style.display = 'flex';
-                document.getElementById('status-badge').textContent = "Verified Ownership";
-                document.getElementById('status-badge').style.color = "#00ff88";
-            }
-        } catch (e) { console.error("Link Error", e); }
+    async function loadItem(id) {
+        const docSnap = await getDoc(doc(db, "inventory", id));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('detail-content').innerHTML = `
+                <div style="background: #fff; color: #000; display: inline-block; padding: 4px 10px; font-weight: 800; font-size: 0.6rem; border-radius: 4px; margin-bottom: 10px;">AUTHENTICATED</div>
+                <h2 style="margin: 0 0 10px 0;">${data.name}</h2>
+                <div style="font-size: 0.6rem; color: #555; margin-bottom: 10px;">Captured on v${data.v || '1.0.0'}</div>
+                ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:100%; border-radius:12px; margin-bottom:15px;">` : ''}
+                <p style="color: #aaa; font-size: 0.9rem;">${data.desc || ''}</p>
+                <button class="btn btn-primary" style="margin-top: 20px;" onclick="window.location.href='${BASE_URL}'">Exit View</button>
+            `;
+            document.getElementById('detail-view').style.display = 'flex';
+        }
     }
 
-    // --- IMAGE PREVIEW ---
+    // UI Logic
     const fileInput = document.getElementById('fileInput');
     const preview = document.getElementById('imagePreview');
     fileInput.onchange = () => {
@@ -208,135 +207,98 @@
         }
     };
 
-    // --- SAVE LOGIC ---
     document.getElementById('saveItemBtn').onclick = async () => {
         const name = document.getElementById('itemName').value;
         const desc = document.getElementById('itemDesc').value;
         const file = fileInput.files[0];
         const btn = document.getElementById('saveItemBtn');
 
-        if (!name) return alert("Please name the object.");
-        if (IMGBB_API_KEY === "YOUR_IMGBB_API_KEY") return alert("Please add your ImgBB API Key to the code.");
-
-        btn.innerText = "Hosting Image...";
-        btn.disabled = true;
+        if (!name) return alert("Identify the object.");
+        btn.innerText = "UPLOADING..."; btn.disabled = true;
 
         let imageUrl = "";
         if (file) {
             const formData = new FormData();
             formData.append("image", file);
-            try {
-                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                    method: "POST",
-                    body: formData
-                });
-                const res = await response.json();
-                imageUrl = res.data.url;
-            } catch (err) {
-                alert("Image upload failed. Check API key.");
-                btn.disabled = false;
-                btn.innerText = "Commit to Vault";
-                return;
-            }
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
+            const json = await res.json();
+            imageUrl = json.data.url;
         }
 
-        btn.innerText = "Vaulting...";
-        await addDoc(inventoryCol, { name, desc, imageUrl, timestamp: Date.now() });
-
-        // Reset
+        await addDoc(inventoryCol, { name, desc, imageUrl, timestamp: Date.now(), v: APP_VERSION });
+        
         document.getElementById('itemName').value = '';
         document.getElementById('itemDesc').value = '';
         fileInput.value = '';
         preview.style.display = 'none';
-        btn.innerText = "Commit to Vault";
-        btn.disabled = false;
+        btn.innerText = "Commit to Vault"; btn.disabled = false;
     };
 
-    // --- RENDER RECORDS ---
     onSnapshot(query(inventoryCol, orderBy("timestamp", "desc")), snap => {
         const list = document.getElementById('vaultList');
         list.innerHTML = '';
         snap.forEach(record => {
             const d = record.data();
             const id = record.id;
-            const fullUrl = `${BASE_URL}?id=${id}`;
             const div = document.createElement('div');
             div.className = 'entry';
             div.innerHTML = `
-                <span style="font-weight:700; font-size: 1.4rem; letter-spacing: -0.5px;">${d.name}</span>
-                <p style="color:#888; margin:10px 0; font-size: 0.95rem;">${d.desc || ''}</p>
+                <span style="font-weight:700; font-size: 1.4rem;">${d.name}</span>
+                <p style="color:#777; margin:8px 0;">${d.desc || ''}</p>
                 ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
                 <div class="qr-wrapper">
                     <div class="qr-output" id="qr-${id}" onclick="downloadQR('${id}', '${d.name}')"></div>
-                    <span class="qr-hint">Tap QR to save to camera roll</span>
+                    <span class="qr-hint">v${d.v || '1.0.0'} // Tap to save label</span>
                 </div>
                 <div class="entry-footer">
-                    <span>UUID: ${id.substring(0,8).toUpperCase()}</span>
+                    <span>${new Date(d.timestamp).toLocaleDateString()}</span>
                     <span class="expunge-btn" onclick="deleteItem('${id}')">Expunge</span>
                 </div>
             `;
             list.appendChild(div);
-            
-            new QRCode(document.getElementById(`qr-${id}`), {
-                text: fullUrl,
-                width: 150,
-                height: 150,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
+            new QRCode(document.getElementById(`qr-${id}`), { text: `${BASE_URL}?id=${id}`, width: 140, height: 140, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.H });
         });
     });
 
     window.downloadQR = (id, name) => {
-        const qrCanvas = document.querySelector(`#qr-${id} canvas`);
+        const canvas = document.querySelector(`#qr-${id} canvas`);
         const link = document.createElement('a');
-        link.download = `QR-${name.toLowerCase().replace(/\s+/g, '-')}.png`;
-        link.href = qrCanvas.toDataURL("image/png");
+        link.download = `LABEL-${name.replace(/\s+/g, '-').toUpperCase()}.png`;
+        link.href = canvas.toDataURL();
         link.click();
     };
 
-    window.deleteItem = async id => { 
-        if(confirm("Expunge this record forever?")) await deleteDoc(doc(db, "inventory", id)); 
-    };
+    window.deleteItem = async id => { if(confirm("Expunge record?")) await deleteDoc(doc(db, "inventory", id)); };
 
-    // --- SCANNER ---
+    // Scanner
     let videoStream = null;
     window.startScanner = () => {
         document.getElementById('scanner-overlay').style.display = 'flex';
-        const video = document.getElementById('video-preview');
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(stream => {
             videoStream = stream;
-            video.srcObject = stream;
-            video.play();
+            const v = document.getElementById('video-preview');
+            v.srcObject = stream;
+            v.play();
             requestAnimationFrame(tick);
-        }).catch(() => alert("Camera access denied."));
+        });
     };
 
     window.stopScanner = () => {
-        if (videoStream) videoStream.getTracks().forEach(t => t.stop());
+        if(videoStream) videoStream.getTracks().forEach(t => t.stop());
         document.getElementById('scanner-overlay').style.display = 'none';
     };
 
     function tick() {
-        const video = document.getElementById('video-preview');
-        const canvasElement = document.getElementById('qr-canvas');
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvasElement.height = video.videoHeight;
-            canvasElement.width = video.videoWidth;
-            const ctx = canvasElement.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-            const imageData = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height);
-            if (code) {
-                stopScanner();
-                window.location.href = code.data;
-                return;
-            }
+        const v = document.getElementById('video-preview');
+        const c = document.getElementById('qr-canvas');
+        if (v.readyState === v.HAVE_ENOUGH_DATA) {
+            c.height = v.videoHeight; c.width = v.videoWidth;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(v, 0, 0, c.width, c.height);
+            const code = jsQR(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height);
+            if (code) { stopScanner(); window.location.href = code.data; return; }
         }
-        if (document.getElementById('scanner-overlay').style.display === 'flex') {
-            requestAnimationFrame(tick);
-        }
+        if (document.getElementById('scanner-overlay').style.display === 'flex') requestAnimationFrame(tick);
     }
 </script>
 
