@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>whats mine. | v1.3.0</title>
+    <title>whats mine. | v1.3.1</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
@@ -44,7 +44,8 @@
         .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .section-title { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 0.5px; }
 
-        input, textarea { width: 100%; background: #181818; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; }
+        input, textarea { width: 100%; background: #181818; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; border: 1px solid transparent; }
+        input:focus { border-color: var(--border); }
 
         .upload-area { border: 2px dashed var(--border); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; margin-bottom: 12px; font-size: 0.8rem; color: var(--text-dim); }
         #imagePreview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; display: none; }
@@ -61,9 +62,8 @@
         .label-text { font-size: 0.7rem; color: var(--text-dim); line-height: 1.4; }
         .label-text b { color: var(--text-main); display: block; margin-bottom: 2px; font-size: 0.75rem; }
 
-        /* iOS SAVE MODAL */
-        #save-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
-        #final-label-img { width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); margin-bottom: 20px; }
+        #save-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px); }
+        #final-label-img { width: 100%; max-width: 500px; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); margin-bottom: 20px; border: 1px solid white; background: white; }
 
         #scanner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: black; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
         video { width: 100%; max-width: 400px; border-radius: 20px; }
@@ -74,9 +74,9 @@
 <body>
 
 <div id="save-modal" onclick="this.style.display='none'">
-    <span class="section-title" style="color:white;">Long-press image to Save to Photos</span>
+    <span class="section-title" style="color:white; text-align:center;">Ultra-HD Label Generated<br><span style="text-transform:none; font-weight:400; opacity:0.8;">Long-press image to Save to Photos</span></span>
     <img id="final-label-img">
-    <button class="btn btn-secondary" style="width: auto;">Dismiss</button>
+    <button class="btn btn-secondary" style="width: auto;">Close Preview</button>
 </div>
 
 <div id="scanner-overlay">
@@ -93,7 +93,7 @@
     <header>
         <div class="brand-block">
             <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
-            <div class="version-tag">CORE_SYSTEM_v1.3.0</div>
+            <div class="version-tag">CORE_SYSTEM_v1.3.1</div>
         </div>
         <div id="status-badge" style="font-size: 0.6rem; color: #00ff88; font-weight: 700;">UPLINK_STABLE</div>
     </header>
@@ -143,6 +143,7 @@
     const inventoryCol = collection(db, "inventory");
     const BASE_URL = "https://lsp-code.github.io/lw/whatsmine/";
 
+    // Handle deep link
     window.addEventListener('DOMContentLoaded', async () => {
         const id = new URLSearchParams(window.location.search).get('id');
         if (id) {
@@ -216,59 +217,78 @@
                 <p style="color:#666; font-size: 0.85rem; margin:8px 0;">${d.desc || ''}</p>
                 ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
                 <div class="qr-wrapper">
-                    <div class="qr-output" id="qr-${id}" onclick="generateSquareTag('${id}', '${d.name}')"></div>
+                    <div class="qr-output" id="qr-${id}" onclick="generateHDTag('${id}', '${d.name}')"></div>
                     <div class="label-text">
-                        <b>PROPERTY OF LOGAN WESTLAKE</b>
+                        <b>LOGAN WESTLAKE</b>
                         <span>${d.name}</span><br>
-                        <span style="font-size:0.55rem; opacity:0.5; margin-top:4px; display:block;">TAP FOR iOS OPTIMIZED TAG</span>
+                        <span style="font-size:0.55rem; opacity:0.5; margin-top:4px; display:block;">TAP FOR PRINT-STABLE HD TAG</span>
                     </div>
                 </div>
             `;
             list.appendChild(div);
-            new QRCode(document.getElementById(`qr-${id}`), { text: `${BASE_URL}?id=${id}`, width: 100, height: 100, colorDark: "#000", colorLight: "#fff", correctLevel: QRCode.CorrectLevel.H });
+            // Enhanced QR Resolution & Error Correction
+            new QRCode(document.getElementById(`qr-${id}`), { 
+                text: `${BASE_URL}?id=${id}`, 
+                width: 256, 
+                height: 256, 
+                colorDark: "#000000", 
+                colorLight: "#ffffff", 
+                correctLevel: QRCode.CorrectLevel.H 
+            });
         });
     });
 
-    window.generateSquareTag = (id, itemName) => {
+    window.generateHDTag = (id, itemName) => {
         const qrCanvas = document.querySelector(`#qr-${id} canvas`);
         const tagCanvas = document.createElement('canvas');
         const ctx = tagCanvas.getContext('2d');
-        const size = 600;
+        
+        // HUGE RESOLUTION FOR PRINT SCALING (2000px)
+        const size = 2000;
         tagCanvas.width = size;
         tagCanvas.height = size;
         
+        // Background
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, size, size);
+        
+        // Text Logic
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
         
-        // Wait for font rendering logic
-        ctx.font = "bold 30px Inter, sans-serif";
-        ctx.fillText("PROPERTY OF", size/2, 60);
-        ctx.font = "bold 34px Inter, sans-serif";
-        ctx.fillText("LOGAN WESTLAKE", size/2, 100);
+        ctx.font = "bold 90px Inter, sans-serif";
+        ctx.fillText("PROPERTY OF", size/2, 200);
+        ctx.font = "bold 110px Inter, sans-serif";
+        ctx.fillText("LOGAN WESTLAKE", size/2, 330);
         
-        const qrSize = 340;
-        ctx.drawImage(qrCanvas, (size - qrSize)/2, 130, qrSize, qrSize);
+        // Draw QR code with pixel-perfect scaling
+        const qrSize = 1100;
+        ctx.imageSmoothingEnabled = false; // Keep QR edges sharp
+        ctx.drawImage(qrCanvas, (size - qrSize)/2, 420, qrSize, qrSize);
         
-        ctx.font = "bold 42px Inter, sans-serif";
-        ctx.fillText(itemName.toUpperCase(), size/2, 530);
-        ctx.font = "16px monospace";
-        ctx.fillStyle = "#888";
-        ctx.fillText(`VAULT_ID: ${id.substring(0,12)}`, size/2, 570);
+        // Footer Item Name
+        ctx.font = "bold 130px Inter, sans-serif";
+        ctx.fillText(itemName.toUpperCase(), size/2, 1720);
         
+        // Detailed ID
+        ctx.font = "45px monospace";
+        ctx.fillStyle = "#555";
+        ctx.fillText(`ASSET_ID: ${id}`, size/2, 1860);
+        
+        // Thick Sharp Border
         ctx.strokeStyle = "black";
-        ctx.lineWidth = 14;
-        ctx.strokeRect(7, 7, size-14, size-14);
+        ctx.lineWidth = 50;
+        ctx.strokeRect(25, 25, size-50, size-50);
 
-        // iOS HANDLING: Show modal for long-press saving
-        const imgData = tagCanvas.toDataURL("image/png");
+        // Preview for Long-Press
+        const imgData = tagCanvas.toDataURL("image/png", 1.0);
         document.getElementById('final-label-img').src = imgData;
         document.getElementById('save-modal').style.display = 'flex';
     };
 
     window.deleteItem = async id => { if(confirm("Permanently remove record?")) await deleteDoc(doc(db, "inventory", id)); };
 
+    // Scanner
     let videoStream = null;
     window.startScanner = () => {
         document.getElementById('scanner-overlay').style.display = 'flex';
