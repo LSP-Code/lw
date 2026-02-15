@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>whats mine. | v1.3.2</title>
+    <title>whats mine. | v1.3.4</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
         :root {
             --bg: #000000;
             --panel: #111111;
-            --glass: rgba(255, 255, 255, 0.04);
             --border: rgba(255, 255, 255, 0.1);
             --accent: #ffffff;
             --text-main: #efefef;
             --text-dim: #777;
-            --danger: #ff453a;
             --success: #00ff88;
+            --danger: #ff453a;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -24,115 +23,147 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg);
-            background-image: radial-gradient(at 0% 0%, rgba(40, 40, 40, 0.5) 0px, transparent 50%);
             color: var(--text-main);
             margin: 0;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
-            padding: 40px 20px;
+            min-height: 100dvh;
+            /* Extra bottom padding to clear iOS Safari UI */
+            padding: env(safe-area-inset-top) 15px calc(env(safe-area-inset-bottom) + 100px) 15px;
         }
 
-        .app-container { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 25px; }
+        .app-container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
 
-        header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .brand-block h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -1.5px; margin: 0; cursor: pointer; }
-        .version-tag { font-family: monospace; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px; }
-
-        .main-layout { display: grid; grid-template-columns: 1fr; gap: 25px; }
-        @media (min-width: 850px) { .main-layout { grid-template-columns: 320px 1fr; } }
-
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .section-title { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 0.5px; }
-
-        input, textarea { width: 100%; background: #181818; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; border: 1px solid transparent; }
+        header { 
+            padding: 20px 0 10px 0; 
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
         
-        .upload-area { border: 2px dashed var(--border); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; margin-bottom: 12px; font-size: 0.8rem; color: var(--text-dim); }
-        #imagePreview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; display: none; }
+        h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; margin: 0; }
+        .version { font-family: monospace; font-size: 0.6rem; color: var(--text-dim); }
 
-        .btn { display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; gap: 8px; font-size: 0.9rem; }
-        .btn-primary { background: var(--accent); color: black; width: 100%; }
-        .btn-secondary { background: var(--glass); color: white; width: 100%; margin-top: 8px; }
-
-        .entry { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 20px; }
-        .item-img { width: 100%; border-radius: 10px; margin: 12px 0; border: 1px solid var(--border); }
-
-        .qr-wrapper { margin-top: 15px; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
-        .qr-output { background: white; padding: 6px; border-radius: 6px; cursor: pointer; }
-
-        /* MODALS */
-        #save-modal, #detail-view { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); z-index: 5000; display: none; 
-            flex-direction: column; align-items: center; justify-content: center; 
-            padding: 20px; backdrop-filter: blur(15px); 
+        .card { 
+            background: var(--panel); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            padding: 20px; 
+            width: 100%;
         }
 
-        #detail-content { 
-            max-width: 450px; width: 100%; border-color: var(--success); 
-            max-height: 85vh; overflow-y: auto; position: relative;
+        .section-label { 
+            font-size: 0.65rem; 
+            font-weight: 700; 
+            color: var(--text-dim); 
+            text-transform: uppercase; 
+            margin-bottom: 15px; 
+            display: block; 
+            letter-spacing: 1px;
         }
 
-        #final-label-img { width: 100%; max-width: 500px; border-radius: 4px; border: 1px solid white; background: white; margin-bottom: 20px; }
+        input, textarea { 
+            width: 100%; 
+            background: #1a1a1a; 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            padding: 14px; 
+            color: white; 
+            font-size: 16px; /* Critical: Stops iOS auto-zoom on focus */
+            margin-bottom: 12px; 
+            outline: none;
+        }
 
-        #scanner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: black; z-index: 6000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        video { width: 100%; max-width: 400px; border-radius: 20px; }
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 12px; 
+            border: none; 
+            font-weight: 700; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+        }
+        .btn-primary { background: white; color: black; }
+        .btn-secondary { background: rgba(255,255,255,0.05); color: white; margin-top: 10px; }
 
-        /* Custom Scrollbar for Detail View */
-        #detail-content::-webkit-scrollbar { width: 4px; }
-        #detail-content::-webkit-scrollbar-track { background: transparent; }
-        #detail-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .vault-item { 
+            background: var(--panel); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            margin-bottom: 15px; 
+            overflow: hidden;
+        }
+        
+        .item-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-weight: 700; font-size: 1.1rem; }
+        .item-img { width: 100%; display: block; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        
+        .qr-strip { padding: 15px 20px; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); }
+        .qr-code-box { background: white; padding: 4px; border-radius: 6px; flex-shrink: 0; }
+        .qr-code-box canvas { width: 70px !important; height: 70px !important; }
+
+        /* Full Screen Modals for iOS */
+        #detail-view, #save-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; 
+            background: black; z-index: 9999; display: none; 
+            flex-direction: column; padding: env(safe-area-inset-top) 20px;
+            overflow-y: auto;
+        }
+
+        #final-label-img { width: 100%; border-radius: 8px; margin: 20px 0; border: 1px solid white; }
+
+        #scanner-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: black; z-index: 10000; display: none; }
+        video { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
-<div id="save-modal" onclick="this.style.display='none'">
-    <span class="section-title" style="color:white; text-align:center;">Ultra-HD Label Generated<br><span style="text-transform:none; font-weight:400; opacity:0.8;">Long-press image to Save to Photos</span></span>
+<div id="save-modal">
+    <div style="text-align:center; padding: 20px 0;">
+        <span class="section-label" style="color:white;">Label Ready</span>
+        <p style="font-size: 0.8rem; opacity: 0.7;">Long-press to save to Photos</p>
+    </div>
     <img id="final-label-img">
-    <button class="btn btn-secondary" style="width: auto;">Close Preview</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('save-modal').style.display='none'">Dismiss</button>
+</div>
+
+<div id="detail-view">
+    <div id="detail-content" style="margin-top: 40px;"></div>
 </div>
 
 <div id="scanner-overlay">
     <video id="video-preview" playsinline></video>
-    <canvas id="qr-canvas" style="display:none;"></canvas>
-    <button class="btn btn-secondary" style="margin-top: 20px; width: auto;" onclick="stopScanner()">Cancel Scan</button>
-</div>
-
-<div id="detail-view">
-    <div class="card" id="detail-content">
-        </div>
+    <button class="btn btn-secondary" style="position:absolute; bottom:40px; width:80%; left:10%;" onclick="stopScanner()">Exit Scanner</button>
 </div>
 
 <div class="app-container">
     <header>
-        <div class="brand-block">
-            <h1 onclick="window.location.href='https://lsp-code.github.io/lw/whatsmine/'">whats mine.</h1>
-            <div class="version-tag">CORE_SYSTEM_v1.3.2</div>
+        <div>
+            <h1 onclick="location.reload()">whats mine.</h1>
+            <div class="version">CORE_SYSTEM_v1.3.4</div>
         </div>
-        <div id="status-badge" style="font-size: 0.6rem; color: var(--success); font-weight: 700;">UPLINK_STABLE</div>
+        <div style="color:var(--success); font-size:0.6rem; font-weight:800; letter-spacing:1px;">ONLINE</div>
     </header>
 
-    <div class="main-layout">
-        <aside>
-            <div class="card">
-                <span class="section-title">Record Object</span>
-                <input type="text" id="itemName" placeholder="Item Name" autocomplete="off">
-                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                    <span id="uploadLabel">Upload Image</span>
-                    <input type="file" id="fileInput" accept="image/*" style="display:none">
-                </div>
-                <img id="imagePreview">
-                <textarea id="itemDesc" rows="3" placeholder="Context/Notes..."></textarea>
-                <button class="btn btn-primary" id="saveItemBtn">Commit to Vault</button>
-                <button class="btn btn-secondary" onclick="startScanner()">Trigger Scanner</button>
-            </div>
-        </aside>
-
-        <main>
-            <span class="section-title">Vault Feed</span>
-            <div id="vaultList"></div>
-        </main>
+    <div class="card">
+        <span class="section-label">Create Asset Record</span>
+        <input type="text" id="itemName" placeholder="Object Name (e.g. Charging Brick)">
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
+        <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()" id="uploadBtn">Add Photo</button>
+        <img id="imagePreview" style="width:100%; border-radius:12px; margin: 10px 0; display:none;">
+        <textarea id="itemDesc" rows="2" placeholder="Notes/Serial Number..."></textarea>
+        <button class="btn btn-primary" id="saveItemBtn">Commit to Vault</button>
+        <button class="btn btn-secondary" onclick="startScanner()" style="border: 1px solid var(--success); color: var(--success);">Open Scanner</button>
     </div>
+
+    <div id="vaultList">
+        <span class="section-label">Active Vault Feed</span>
+        </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -157,160 +188,136 @@
     const inventoryCol = collection(db, "inventory");
     const BASE_URL = "https://lsp-code.github.io/lw/whatsmine/";
 
-    window.addEventListener('DOMContentLoaded', async () => {
-        const id = new URLSearchParams(window.location.search).get('id');
-        if (id) {
-            const snap = await getDoc(doc(db, "inventory", id));
-            if (snap.exists()) {
-                const d = snap.data();
-                document.getElementById('detail-content').innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <div style="background: var(--success); color: #000; padding: 2px 8px; font-weight: 900; font-size: 0.6rem; border-radius: 4px; letter-spacing: 1px;">OFFICIAL RECORD</div>
-                        <span style="color:var(--text-dim); font-size:1.2rem; cursor:pointer;" onclick="document.getElementById('detail-view').style.display='none'">✕</span>
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <span style="display:block; color:var(--text-dim); font-size:0.7rem; text-transform:uppercase; font-weight:700; letter-spacing:1px;">Owner</span>
-                        <span style="font-size:1.4rem; font-weight:800; color:#fff;">LOGAN WESTLAKE</span>
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <span style="display:block; color:var(--text-dim); font-size:0.7rem; text-transform:uppercase; font-weight:700; letter-spacing:1px;">Item Name</span>
-                        <span style="font-size:1.2rem; font-weight:600; color:#fff;">${d.name}</span>
-                    </div>
-                    ${d.imageUrl ? `<img src="${d.imageUrl}" style="width:100%; border-radius:12px; margin-bottom:15px; border: 1px solid var(--border);">` : ''}
-                    <div style="color:var(--text-dim); font-size:0.85rem; line-height:1.6; background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border: 1px solid var(--border);">
-                        ${d.desc || 'No additional records attached.'}
-                    </div>
-                    <button class="btn btn-primary" style="margin-top:20px;" onclick="window.location.href='${BASE_URL}'">Access My Vault</button>
-                    <div style="height:20px;"></div>
-                `;
-                document.getElementById('detail-view').style.display = 'flex';
-            }
+    // Deep Link Check
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('id')) {
+        const id = urlParams.get('id');
+        const snap = await getDoc(doc(db, "inventory", id));
+        if (snap.exists()) {
+            const d = snap.data();
+            document.getElementById('detail-content').innerHTML = `
+                <div class="card" style="border-color:var(--success);">
+                    <span class="section-label">Identity Verified</span>
+                    <h2 style="margin: 5px 0 20px 0;">LOGAN WESTLAKE</h2>
+                    <p style="color:var(--text-dim); margin:0;">ASSET</p>
+                    <h3 style="margin:0 0 15px 0;">${d.name}</h3>
+                    ${d.imageUrl ? `<img src="${d.imageUrl}" style="width:100%; border-radius:12px; margin-bottom:15px;">` : ''}
+                    <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; font-size:0.9rem; margin-bottom:20px;">${d.desc || 'No notes found.'}</div>
+                    <button class="btn btn-primary" onclick="location.href='${BASE_URL}'">Enter My Vault</button>
+                </div>
+            `;
+            document.getElementById('detail-view').style.display = 'flex';
         }
-    });
+    }
 
-    // File Preview Logic
-    const fileInput = document.getElementById('fileInput');
-    fileInput.onchange = () => {
-        const [file] = fileInput.files;
+    // Upload & Save
+    document.getElementById('fileInput').onchange = e => {
+        const file = e.target.files[0];
         if (file) {
             document.getElementById('imagePreview').src = URL.createObjectURL(file);
             document.getElementById('imagePreview').style.display = 'block';
-            document.getElementById('uploadLabel').textContent = "Visual Ready";
+            document.getElementById('uploadBtn').innerText = "Change Photo";
         }
     };
 
-    // Commit to Firebase
     document.getElementById('saveItemBtn').onclick = async () => {
         const name = document.getElementById('itemName').value;
         const desc = document.getElementById('itemDesc').value;
-        const file = fileInput.files[0];
+        const file = document.getElementById('fileInput').files[0];
         const btn = document.getElementById('saveItemBtn');
-        if (!name) return alert("Item Name Required");
-        btn.innerText = "Syncing..."; btn.disabled = true;
+        if(!name) return alert("Missing Item Name");
+        
+        btn.disabled = true; btn.innerText = "Uploading...";
         let imageUrl = "";
         if (file) {
             const fd = new FormData(); fd.append("image", file);
-            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: fd });
-            const json = await res.json();
-            imageUrl = json.data.url;
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {method:"POST", body:fd});
+            imageUrl = (await res.json()).data.url;
         }
-        await addDoc(inventoryCol, { name, desc, imageUrl, timestamp: Date.now() });
-        document.getElementById('itemName').value = '';
-        document.getElementById('itemDesc').value = '';
-        fileInput.value = '';
-        document.getElementById('imagePreview').style.display = 'none';
-        btn.innerText = "Commit to Vault"; btn.disabled = false;
+        await addDoc(inventoryCol, {name, desc, imageUrl, timestamp: Date.now()});
+        location.reload();
     };
 
-    // Live Feed Listener
+    // Live Feed
     onSnapshot(query(inventoryCol, orderBy("timestamp", "desc")), snap => {
         const list = document.getElementById('vaultList');
-        list.innerHTML = '';
-        snap.forEach(record => {
-            const d = record.data();
-            const id = record.id;
-            const div = document.createElement('div');
-            div.className = 'entry';
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <span style="font-weight:700; font-size: 1.2rem;">${d.name}</span>
-                    <span class="expunge-btn" onclick="deleteItem('${id}')" style="color:var(--danger); cursor:pointer; font-size:0.6rem; font-weight:800;">EXPUNGE</span>
+        list.innerHTML = '<span class="section-label">Active Vault Feed</span>';
+        snap.forEach(doc => {
+            const d = doc.data();
+            const id = doc.id;
+            const item = document.createElement('div');
+            item.className = 'vault-item';
+            item.innerHTML = `
+                <div class="item-header">
+                    <span class="item-name">${d.name}</span>
+                    <span onclick="deleteItem('${id}')" style="color:var(--danger); font-size:0.7rem; font-weight:800;">EXPUNGE</span>
                 </div>
-                <p style="color:#666; font-size: 0.85rem; margin:8px 0;">${d.desc || ''}</p>
                 ${d.imageUrl ? `<img src="${d.imageUrl}" class="item-img">` : ''}
-                <div class="qr-wrapper">
-                    <div class="qr-output" id="qr-${id}" onclick="generateHDTag('${id}', '${d.name}')"></div>
-                    <div class="label-text">
-                        <b style="color:#fff;">LOGAN WESTLAKE</b>
-                        <span style="color:#777;">${d.name}</span><br>
-                        <span style="font-size:0.55rem; opacity:0.5; margin-top:4px; display:block;">TAP FOR PRINT-STABLE HD TAG</span>
+                <div class="qr-strip" onclick="generateHDTag('${id}', '${d.name}')">
+                    <div class="qr-code-box" id="qr-${id}"></div>
+                    <div>
+                        <b style="display:block; font-size:0.75rem;">LOGAN WESTLAKE</b>
+                        <span style="font-size:0.6rem; opacity:0.5;">TAP FOR PRINTABLE HD TAG</span>
                     </div>
                 </div>
             `;
-            list.appendChild(div);
-            new QRCode(document.getElementById(`qr-${id}`), { 
-                text: `${BASE_URL}?id=${id}`, width: 256, height: 256, 
-                colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H 
-            });
+            list.appendChild(item);
+            new QRCode(document.getElementById(`qr-${id}`), { text: `${BASE_URL}?id=${id}`, width: 128, height: 128 });
         });
     });
 
-    // HD Tag Generator
+    window.deleteItem = async id => { if(confirm("Destroy record?")) await deleteDoc(doc(db, "inventory", id)); };
+
+    // HD Tag System (Print-Ready)
     window.generateHDTag = (id, itemName) => {
         const qrCanvas = document.querySelector(`#qr-${id} canvas`);
-        const tagCanvas = document.createElement('canvas');
-        const ctx = tagCanvas.getContext('2d');
-        const size = 2000;
-        tagCanvas.width = size; tagCanvas.height = size;
-        ctx.fillStyle = "white"; ctx.fillRect(0, 0, size, size);
+        const tag = document.createElement('canvas');
+        const ctx = tag.getContext('2d');
+        const size = 1500; tag.width = size; tag.height = size;
+
+        ctx.fillStyle = "white"; ctx.fillRect(0,0,size,size);
         ctx.fillStyle = "black"; ctx.textAlign = "center";
-        ctx.font = "bold 90px Inter, sans-serif";
-        ctx.fillText("PROPERTY OF", size/2, 200);
-        ctx.font = "bold 110px Inter, sans-serif";
-        ctx.fillText("LOGAN WESTLAKE", size/2, 330);
-        const qrSize = 1100;
+        
+        ctx.font = "bold 70px Inter"; ctx.fillText("PROPERTY OF", size/2, 180);
+        ctx.font = "bold 90px Inter"; ctx.fillText("LOGAN WESTLAKE", size/2, 290);
+        
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(qrCanvas, (size - qrSize)/2, 420, qrSize, qrSize);
-        ctx.font = "bold 130px Inter, sans-serif";
-        ctx.fillText(itemName.toUpperCase(), size/2, 1720);
-        ctx.font = "45px monospace"; ctx.fillStyle = "#555";
-        ctx.fillText(`ASSET_ID: ${id}`, size/2, 1860);
-        ctx.strokeStyle = "black"; ctx.lineWidth = 50;
-        ctx.strokeRect(25, 25, size-50, size-50);
-        const imgData = tagCanvas.toDataURL("image/png", 1.0);
-        document.getElementById('final-label-img').src = imgData;
+        ctx.drawImage(qrCanvas, (size-900)/2, 380, 900, 900);
+        
+        ctx.font = "bold 110px Inter"; ctx.fillText(itemName.toUpperCase(), size/2, 1380);
+        ctx.strokeStyle = "black"; ctx.lineWidth = 40; ctx.strokeRect(20,20,size-40,size-40);
+
+        document.getElementById('final-label-img').src = tag.toDataURL();
         document.getElementById('save-modal').style.display = 'flex';
     };
 
-    window.deleteItem = async id => { if(confirm("Permanently remove record?")) await deleteDoc(doc(db, "inventory", id)); };
-
-    // Scanner Logic
+    // Mobile Scanner
     let videoStream = null;
     window.startScanner = () => {
-        document.getElementById('scanner-overlay').style.display = 'flex';
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(stream => {
+        document.getElementById('scanner-overlay').style.display = 'block';
+        navigator.mediaDevices.getUserMedia({video: {facingMode:"environment"}}).then(stream => {
             videoStream = stream;
             const v = document.getElementById('video-preview');
             v.srcObject = stream; v.play();
-            requestAnimationFrame(tick);
+            const tick = () => {
+                if(v.readyState === v.HAVE_ENOUGH_DATA) {
+                    const c = document.createElement('canvas');
+                    c.width = v.videoWidth; c.height = v.videoHeight;
+                    const ctx = c.getContext('2d');
+                    ctx.drawImage(v,0,0);
+                    const code = jsQR(ctx.getImageData(0,0,c.width,c.height).data, c.width, c.height);
+                    if(code) { window.location.href = code.data; stopScanner(); return; }
+                }
+                if(videoStream) requestAnimationFrame(tick);
+            };
+            tick();
         });
     };
     window.stopScanner = () => {
         if(videoStream) videoStream.getTracks().forEach(t => t.stop());
+        videoStream = null;
         document.getElementById('scanner-overlay').style.display = 'none';
     };
-    function tick() {
-        const v = document.getElementById('video-preview');
-        const c = document.getElementById('qr-canvas');
-        if (v && v.readyState === v.HAVE_ENOUGH_DATA) {
-            c.height = v.videoHeight; c.width = v.videoWidth;
-            const ctx = c.getContext('2d');
-            ctx.drawImage(v, 0, 0, c.width, c.height);
-            const code = jsQR(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height);
-            if (code) { stopScanner(); window.location.href = code.data; return; }
-        }
-        if (document.getElementById('scanner-overlay').style.display === 'flex') requestAnimationFrame(tick);
-    }
 </script>
 
 </body>
