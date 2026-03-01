@@ -25,7 +25,6 @@
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg);
-            background-image: radial-gradient(at 0% 0%, rgba(40, 40, 40, 0.5) 0px, transparent 50%);
             color: var(--text-main);
             margin: 0;
             display: flex;
@@ -37,35 +36,17 @@
         .app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 30px; }
 
         header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        
-        h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; letter-spacing: -2px; margin: 0; }
+        h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; letter-spacing: -2px; margin: 0; color: white; }
 
         .main-layout { display: grid; grid-template-columns: 1fr; gap: 30px; }
         @media (min-width: 850px) { .main-layout { grid-template-columns: 350px 1fr; align-items: start; } }
 
         .card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
         .section-title { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; }
 
         input, textarea, select {
             width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px;
-            padding: 14px; color: white; font-size: 16px; margin-bottom: 12px;
-        }
-
-        /* Image Upload Styles */
-        .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 12px;
-            transition: all 0.2s;
-        }
-        .upload-area:hover { border-color: #555; background: var(--glass); }
-        #imagePreview { 
-            width: 100%; max-height: 150px; object-fit: cover; 
-            border-radius: 8px; margin-bottom: 12px; display: none; 
+            padding: 14px; color: white; font-size: 16px; margin-bottom: 12px; font-family: inherit;
         }
 
         .btn {
@@ -75,53 +56,88 @@
         .btn-primary { background: var(--accent); color: black; width: 100%; }
         .btn-secondary { background: var(--glass); color: white; }
 
-        .entry { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 16px; }
-        .attachment-link { 
-            display: inline-block; margin-top: 10px; color: #0a84ff; text-decoration: none; font-size: 0.85rem; 
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px;
         }
-        .evidence-img { width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
+        .modal-content { background: var(--panel); border: 1px solid var(--border); width: 100%; max-width: 500px; border-radius: 24px; padding: 30px; }
 
+        .entry { background: var(--panel); border: 1px solid var(--border); padding: 25px; border-radius: 16px; margin-bottom: 16px; }
+        .evidence-img { width: 100%; border-radius: 8px; margin-top: 15px; border: 1px solid var(--border); }
         .entry-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); }
-        .expunge-btn { color: var(--danger); cursor: pointer; }
+        .action-link { cursor: pointer; margin-left: 15px; transition: color 0.2s; }
+        .action-link:hover { color: white; }
+
+        .response-box {
+            margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #0a84ff; border-radius: 4px; font-size: 0.9rem; color: #fff;
+        }
+
+        /* VIEW MODE OVERRIDES */
+        body.view-mode { background: #fff; color: #000; }
+        body.view-mode .sidebar, body.view-mode header, body.view-mode .action-link { display: none !important; }
+        body.view-mode .entry { border: none; background: #fff; max-width: 600px; margin: 0 auto; box-shadow: none; }
+        body.view-mode .entry-text { color: #333; }
+        body.view-mode .print-label { display: block; font-weight: bold; margin-bottom: 5px; }
+        body.view-mode .response-box { background: #f2f2f2; border-color: #007aff; color: #333; }
+
+        .print-label { display: none; }
+
+        @media print {
+            .modal-overlay, .sidebar, header, .action-link { display: none !important; }
+            body { background: white !important; color: black !important; padding: 0 !important; }
+            .entry { border: none !important; page-break-after: always; }
+            .print-label { display: block !important; }
+        }
     </style>
 </head>
-<body>
+<body id="bodyTag">
+
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="section-title">Modify Case Record</span>
+        <select id="editFriendSelect"></select>
+        <input type="text" id="editCaseId" placeholder="Case Number">
+        <textarea id="editIncidentInput" rows="5"></textarea>
+        <input type="file" id="editFileInput" accept="image/*">
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="btn btn-primary" onclick="submitEdit()">Update Archive</button>
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
 
 <div class="app-container">
-    <header>
+    <header id="mainHeader">
         <h1>the archive.</h1>
-        <div style="background: var(--glass); padding: 6px 12px; border-radius: 100px; font-size: 0.7rem;">Vault Active</div>
+        <div id="headerStatus" style="background: var(--glass); padding: 6px 12px; border-radius: 100px; font-size: 0.7rem;">Vault Active</div>
+        <button id="exitViewBtn" class="btn btn-secondary" style="display:none; padding: 5px 15px; font-size: 0.7rem;" onclick="window.location.search=''">Back to Vault</button>
     </header>
 
     <div class="main-layout">
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="card">
-                <span class="section-title">New Profile</span>
+                <span class="section-title">Manage Profiles</span>
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="newFriendName" placeholder="Name" style="margin-bottom: 0;">
+                    <input type="text" id="newFriendName" placeholder="New Name" style="margin-bottom: 0;">
                     <button class="btn btn-secondary" id="addProfileBtn">+</button>
                 </div>
             </div>
 
             <div class="card">
-                <span class="section-title">Log Incident</span>
+                <span class="section-title">New Report</span>
                 <select id="friendSelect">
-                    <option value="" disabled selected>Select Profile</option>
+                    <option value="" disabled selected>Select Subject</option>
                 </select>
-                
-                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                    <span id="uploadLabel">Add Evidence (Image)</span>
-                    <input type="file" id="fileInput" accept="image/*" style="display:none">
-                </div>
-                <img id="imagePreview">
-
-                <textarea id="incidentInput" rows="3" placeholder="Description..."></textarea>
-                <button class="btn btn-primary" id="saveEntryBtn">Secure Incident</button>
+                <input type="file" id="fileInput" accept="image/*">
+                <textarea id="incidentInput" rows="6" placeholder="Describe the incident..."></textarea>
+                <button class="btn btn-primary" id="saveEntryBtn">Commit to Archive</button>
             </div>
         </div>
 
         <div class="feed-section">
-            <span class="section-title">Evidence Feed</span>
+            <span class="section-title" id="feedTitle">Archived Incidents</span>
             <div id="logList"></div>
         </div>
     </div>
@@ -129,7 +145,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
@@ -144,91 +160,185 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-    
     const profilesCol = collection(db, "profiles");
     const entriesCol = collection(db, "entries");
 
-    // Preview Logic
-    const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('imagePreview');
-    fileInput.onchange = e => {
-        const [file] = fileInput.files;
-        if (file) {
-            preview.src = URL.createObjectURL(file);
-            preview.style.display = 'block';
-            document.getElementById('uploadLabel').textContent = "Image Ready";
-        }
-    };
+    let currentEditingId = null;
 
-    // Add Profile
-    document.getElementById('addProfileBtn').onclick = async () => {
-        const input = document.getElementById('newFriendName');
-        if (input.value) {
-            await addDoc(profilesCol, { name: input.value });
-            input.value = '';
-        }
-    };
+    const urlParams = new URLSearchParams(window.location.search);
+    const reportId = urlParams.get('report');
 
-    // Dropdown Sync
-    onSnapshot(profilesCol, snap => {
-        const select = document.getElementById('friendSelect');
-        select.innerHTML = '<option value="" disabled selected>Select Profile</option>';
-        snap.forEach(d => {
-            const opt = document.createElement('option');
-            opt.value = d.data().name; opt.textContent = d.data().name;
-            select.appendChild(opt);
+    if (reportId) {
+        document.body.classList.add('view-mode');
+        document.getElementById('feedTitle').textContent = "Official Dossier";
+        document.getElementById('exitViewBtn').style.display = "block";
+        document.getElementById('headerStatus').style.display = "none";
+        loadSingleReport(reportId);
+    } else {
+        initNormalMode();
+    }
+
+    async function loadSingleReport(id) {
+        const docRef = doc(db, "entries", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            renderEntry(docSnap.id, docSnap.data(), true);
+        } else {
+            document.getElementById('logList').innerHTML = "<p style='color:black; text-align:center;'>Record Expunged.</p>";
+        }
+    }
+
+    function initNormalMode() {
+        onSnapshot(profilesCol, snap => {
+            const selects = [document.getElementById('friendSelect'), document.getElementById('editFriendSelect')];
+            selects.forEach(s => {
+                const val = s.value;
+                s.innerHTML = '<option value="" disabled selected>Select Subject</option>';
+                snap.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.data().name; opt.textContent = d.data().name;
+                    s.appendChild(opt);
+                });
+                s.value = val;
+            });
         });
-    });
 
-    // Save Logic (with Image Upload)
+        onSnapshot(query(entriesCol, orderBy("timestamp", "desc")), snap => {
+            const list = document.getElementById('logList');
+            list.innerHTML = '';
+            snap.forEach(record => renderEntry(record.id, record.data(), false));
+        });
+    }
+
+    function renderEntry(id, d, isViewOnly) {
+        const list = document.getElementById('logList');
+        const div = document.createElement('div');
+        div.className = 'entry';
+        
+        const headerHtml = `
+            <div class="print-label" style="color:#add8e6; font-size:20px; text-align:center; margin-bottom:20px;">the archive.</div>
+            <div class="print-label">CASE: ${d.caseId}</div>
+            <div class="print-label">DATE: ${d.dateStr}</div>
+            <div class="print-label">SUBJECT: ${d.name}</div>
+            <div class="print-label" style="margin-top:15px; border-bottom:1px dashed #ccc; padding-bottom:10px;">FORMAL RECORD</div>
+        `;
+
+        const responseHtml = d.subjectResponse ? `
+            <div class="response-box">
+                <span class="section-title" style="font-size:0.6rem; color:inherit;">Subject Response:</span>
+                ${d.subjectResponse}
+            </div>
+        ` : '';
+
+        const feedbackInputHtml = (isViewOnly && !d.subjectResponse) ? `
+            <div style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
+                <span class="section-title" style="color:#777">Subject Statement:</span>
+                <textarea id="subjectFeedback" placeholder="Enter your response here..." rows="3"></textarea>
+                <button class="btn btn-primary" onclick="submitFeedback('${id}')">Seal Statement</button>
+            </div>
+        ` : '';
+
+        div.innerHTML = `
+            ${headerHtml}
+            <span style="font-weight:700;" class="${isViewOnly ? 'print-label' : ''}">${d.name}</span>
+            <div class="entry-text" style="margin: 15px 0;">${d.incident}</div>
+            ${d.imageUrl ? `<img src="${d.imageUrl}" class="evidence-img">` : ''}
+            ${responseHtml}
+            ${feedbackInputHtml}
+            <div class="entry-footer">
+                <span>${d.caseId} | ${d.dateStr}</span>
+                ${!isViewOnly ? `
+                <div>
+                    <span class="action-link" onclick="copyShareLink('${id}')" style="color:#0a84ff">Copy Link</span>
+                    <span class="action-link" onclick="openEditModal('${id}', '${d.name}', \`${d.incident.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, '${d.caseId}')">Edit</span>
+                    <span class="action-link" style="color:var(--danger)" onclick="deleteRecord('${id}')">Expunge</span>
+                    <span class="action-link" style="color:white" onclick="window.print()">Print</span>
+                </div>` : ''}
+            </div>
+        `;
+        list.appendChild(div);
+    }
+
+    window.submitFeedback = async (id) => {
+        const text = document.getElementById('subjectFeedback').value.trim();
+        if (!text) return;
+        await updateDoc(doc(db, "entries", id), { subjectResponse: text });
+        alert("Statement filed.");
+        location.reload();
+    };
+
+    window.copyShareLink = (id) => {
+        // Updated to use your live URL specifically
+        const baseUrl = "https://lsp-code.github.io/lw/";
+        const url = baseUrl + "?report=" + id;
+        
+        navigator.clipboard.writeText(url).then(() => {
+            alert("Shareable Link Copied: " + url);
+        }).catch(() => {
+            prompt("Link generation successful. Copy below:", url);
+        });
+    };
+
+    document.getElementById('addProfileBtn').onclick = async () => {
+        const name = document.getElementById('newFriendName').value.trim();
+        if (name) { await addDoc(profilesCol, { name }); document.getElementById('newFriendName').value = ''; }
+    };
+
     document.getElementById('saveEntryBtn').onclick = async () => {
         const name = document.getElementById('friendSelect').value;
         const text = document.getElementById('incidentInput').value;
-        const file = fileInput.files[0];
-        if (!name || !text) return alert("Select friend and add text.");
+        const file = document.getElementById('fileInput').files[0];
+        if (!name || !text) return;
 
         let imageUrl = null;
         if (file) {
-            const storageRef = ref(storage, `evidence/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            imageUrl = await getDownloadURL(snapshot.ref);
+            const sRef = ref(storage, `evidence/${Date.now()}`);
+            const snap = await uploadBytes(sRef, file);
+            imageUrl = await getDownloadURL(snap.ref);
         }
 
-        await addDoc(entriesCol, {
-            name, incident: text, imageUrl,
-            timestamp: Date.now(),
-            dateStr: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-        });
+        const qry = query(entriesCol, where("name", "==", name));
+        const count = (await getDocs(qry)).size;
+        const caseId = `${name}-${(count + 1).toString().padStart(2, '0')}`;
 
-        // Reset
-        fileInput.value = '';
-        preview.style.display = 'none';
-        document.getElementById('incidentInput').value = '';
-        document.getElementById('uploadLabel').textContent = "Add Evidence (Image)";
+        await addDoc(entriesCol, {
+            name, incident: text, imageUrl, caseId,
+            timestamp: Date.now(), dateStr: new Date().toLocaleDateString()
+        });
+        document.getElementById('incidentInput').value = "";
     };
 
-    // Feed Sync
-    onSnapshot(query(entriesCol, orderBy("timestamp", "desc")), snap => {
-        const list = document.getElementById('logList');
-        list.innerHTML = '';
-        snap.forEach(record => {
-            const d = record.data();
-            const div = document.createElement('div');
-            div.className = 'entry';
-            div.innerHTML = `
-                <span style="font-weight:700; color:white;">${d.name}</span>
-                <p style="color:#aaa; margin:10px 0;">${d.incident}</p>
-                ${d.imageUrl ? `<img src="${d.imageUrl}" class="evidence-img">` : ''}
-                <div class="entry-footer">
-                    <span>${d.dateStr}</span>
-                    <span class="expunge-btn" onclick="deleteRecord('${record.id}')">Expunge</span>
-                </div>
-            `;
-            list.appendChild(div);
-        });
-    });
+    window.openEditModal = (id, name, incident, caseId) => {
+        currentEditingId = id;
+        document.getElementById('editFriendSelect').value = name;
+        document.getElementById('editCaseId').value = caseId;
+        document.getElementById('editIncidentInput').value = incident;
+        document.getElementById('editModal').style.display = 'flex';
+    };
 
-    window.deleteRecord = async id => { await deleteDoc(doc(db, "entries", id)); };
+    window.closeModal = () => { document.getElementById('editModal').style.display = 'none'; };
+
+    window.submitEdit = async () => {
+        const name = document.getElementById('editFriendSelect').value;
+        const caseId = document.getElementById('editCaseId').value;
+        const text = document.getElementById('editIncidentInput').value;
+        const file = document.getElementById('editFileInput').files[0];
+        
+        let imageUrl = null;
+        if (file) {
+            const sRef = ref(storage, `evidence/${Date.now()}`);
+            const snap = await uploadBytes(sRef, file);
+            imageUrl = await getDownloadURL(snap.ref);
+        }
+
+        const updateData = { name, caseId, incident: text };
+        if (imageUrl) updateData.imageUrl = imageUrl;
+        
+        await updateDoc(doc(db, "entries", currentEditingId), updateData);
+        closeModal();
+    };
+
+    window.deleteRecord = async id => { if(confirm("Expunge record?")) await deleteDoc(doc(db, "entries", id)); };
 </script>
 
 </body>
